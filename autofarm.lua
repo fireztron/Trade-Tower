@@ -3,7 +3,7 @@
 ]]
 
 local maxPrice = 50000 --// You can't sell items worth more than 50k
-local maxPriceOfCaseToBuy = 1350
+local maxPriceOfCaseToBuy = 9e9
 
 --// Modules
 local InfoModule = require(game.ReplicatedStorage.Modules.Info)
@@ -250,10 +250,9 @@ local function getHighestValueBuyableCase()
     local highestnumber = 0
     local targetCaseName
     for caseName, price in pairs(buyableCases) do
-        local targetPrice = price
-        targetCaseName = caseName
         if price > highestnumber then
-            highestnumber = targetPrice
+            targetCaseName = caseName
+            highestnumber = price
         end
     end
     return targetCaseName
@@ -277,10 +276,11 @@ spawn(function()
         spawn(function()
             local caseName = getHighestValueBuyableCase()
             if caseName then
-                game:GetService("ReplicatedStorage").Events.OpenCase:InvokeServer(caseName)
+                print(caseName)
+                --game:GetService("ReplicatedStorage").Events.OpenCase:InvokeServer(caseName)
             end
         end)
-        wait()
+        wait(1)
     end
 end)
 
