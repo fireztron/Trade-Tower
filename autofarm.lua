@@ -1,8 +1,8 @@
 --[[
   ZERO PROFIT AUTO FARM LOL XD
 ]]
-
 local maxPrice = 50000 --// You can't sell items worth more than 50k
+local minPriceOfCaseToBuy = 1350
 local maxPriceOfCaseToBuy = 9e9
 
 --// Modules
@@ -242,7 +242,7 @@ local function getHighestValueBuyableCase()
     local currentRobux = getRobux()
     local buyableCases = {}
     for caseName, price in pairs(caseTypes) do
-        if currentRobux >= price and price <= maxPriceOfCaseToBuy then
+        if currentRobux >= price and price <= maxPriceOfCaseToBuy and price >= minPriceOfCaseToBuy then
             buyableCases[caseName] = price
         end
     end
@@ -276,11 +276,11 @@ spawn(function()
         spawn(function()
             local caseName = getHighestValueBuyableCase()
             if caseName then
-                print(caseName)
-                --game:GetService("ReplicatedStorage").Events.OpenCase:InvokeServer(caseName)
+                --print(caseName)
+                game:GetService("ReplicatedStorage").Events.OpenCase:InvokeServer(caseName)
             end
         end)
-        wait(1)
+        wait()
     end
 end)
 
