@@ -15,7 +15,7 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local List = LocalPlayer.PlayerGui.Gui.Frames.Inventory.SubInventory.Holder.List
 
---//  For Non-Synapse Users (credits to egg salad)
+--// For Non-Synapse Users (credits to egg salad)
 if not pcall(function() return syn.protect_gui end) then
     syn = {}
     syn.protect_gui = function(egg)
@@ -24,16 +24,20 @@ if not pcall(function() return syn.protect_gui end) then
 end
 
 --// lib stuff uwuware i think
-local lib = loadstring(game:HttpGet('https://raw.githubusercontent.com/obeseinsect/ok/main/ok.lua', true))()
+local lib = loadstring(game:HttpGet('https://raw.githubusercontent.com/fireztron/uwuware-ui-library/main/ui.lua', true))()
 local window = lib:CreateWindow('Trade Tower GUI')
-window:AddFolder("Sex")
 window:AddLabel({text = "fireztron @ v3rmillion"})
 
+--// auto buy UI
 window:AddToggle({text = 'Auto buy', state = autobuy, callback = function(v) 
     autobuy = v; 
 end})
 
---// Get case prices
+        --// Get case prices caseInfo = {
+        --      ["properties"] = {
+        --          ["Price"]
+        --      }
+        --   }
 local caseTypes = {}
 for caseName, caseInfo in pairs(InfoModule.Cases) do
  -- InfoModule:returnCaseBounds("name") to get bounds
@@ -43,27 +47,33 @@ for caseName, caseInfo in pairs(InfoModule.Cases) do
 end
 
 --// Sorted cases prices
-for caseName, caseInfo in ipairs(MainFunctions:ReturnSortedDictionary(caseTypes, "Price", true)) do
-    caseTypes[caseName] = caseInfo
-    --print(caseName, caseInfo.name, caseInfo.properties.Price)
-end
-
 local caseNames = {}
-for caseName, caseInfo in pairs(caseTypes) do
-    print(caseName)
-    table.insert(caseNames, caseName)
+for _, caseInfo in ipairs(MainFunctions:ReturnSortedDictionary(caseTypes, "Price", true)) do
+    caseTypes[caseInfo.name] = caseInfo
+    table.insert(caseNames, caseInfo.name)
 end
 
-window:AddList({text = 'lowest cost case to autobuy', state = mobName, value = caseNames, values = caseTypes, callback = function(v) mobName = v end})
+--// auto buy options ui
+local autobuyoptions = window:AddFolder("auto buy options")
+autobuyoptions:AddList({text = 'lowest cost case to autobuy', state = lowestCaseToAutoBuy, value = caseNames[1], values = caseNames, callback = function(v) lowestCaseToAutoBuy = v end})
+autobuyoptions:AddList({text = 'highest cost case to autobuy', state = highestCaseToAutoBuy, value = caseNames[#caseNames], values = caseNames, callback = function(v) highestCaseToAutoBuy = v end})
 
+--// auto sell UI
 window:AddToggle({text = 'Auto sell', state = autosell, callback = function(v) 
     autosell = v; 
 end})
 
+--// auto sell options UI
+local autoselloptions = window:AddFolder("auto sell options")
 
+autoselloptions:AddSlider({text = 'Max price to autosell', value = 50000, min = 0, max = 50000, float = 1000, dual = true, callback = function(v) tweenspeed = v end})
+
+window:AddToggle({text = 'Anti Afk', state = antiafk, callback = function(v) 
+    antiafk = v; 
+end})
+
+--// Init library
 lib:Init()
-
---[[
 
 --// Quick sell
 local function sellItem(itemName, amount)
@@ -335,8 +345,10 @@ end)
 --// Anti afk
 local VirtualUser=game:GetService('VirtualUser')
 game:GetService('Players').LocalPlayer.Idled:connect(function()
-    VirtualUser:CaptureController()
-    VirtualUser:ClickButton2(Vector2.new())
+    if antiafk then
+        VirtualUser:CaptureController()
+        VirtualUser:ClickButton2(Vector2.new())
+    end
 end)
 
 warn("my butthole is wet daddy")
