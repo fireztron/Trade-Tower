@@ -1,5 +1,5 @@
 --[[
-  ZERO PROFIT AUTO FARM LOL XD
+  auto jackpot in progerss!
 ]]
 --// Modules
 local InfoModule = require(game.ReplicatedStorage.Modules.Info)
@@ -15,22 +15,25 @@ local List = LocalPlayer.PlayerGui.Gui.Frames.Inventory.SubInventory.Holder.List
         --          ["Price"]
         --      }
         --   }
-local caseTypes = {}
-for caseName, caseInfo in pairs(InfoModule.Cases) do
- -- InfoModule:returnCaseBounds("name") to get bounds
-    if caseInfo["Currency"] == "Robux" then
-        caseTypes[caseName] = caseInfo
-    end 
+--// Get casetypes info
+local caseTypes = {}; do
+    for caseName, caseInfo in pairs(InfoModule.Cases) do
+     -- InfoModule:returnCaseBounds("name") to get bounds
+        if caseInfo["Currency"] == "Robux" then
+            caseTypes[caseName] = caseInfo
+        end 
+    end
 end
 
 --// Sorted cases prices
-local caseNames = {}
-for _, caseInfo in ipairs(MainFunctions:ReturnSortedDictionary(caseTypes, "Price", true)) do
-    caseTypes[caseInfo.name] = caseInfo
+local caseNames = {}; do
+    for _, caseInfo in ipairs(MainFunctions:ReturnSortedDictionary(caseTypes, "Price", true)) do
+        caseTypes[caseInfo.name] = caseInfo
 
-    local price = caseInfo.properties.Price
-    local name = caseInfo.name
-    table.insert(caseNames, string.format("%s ($%d)", name, price))
+        local price = caseInfo.properties.Price
+        local name = caseInfo.name
+        table.insert(caseNames, string.format("%s ($%d)", name, price))
+    end
 end
 
 --// Default values set beforehand
@@ -52,6 +55,7 @@ local function sellItem(itemName, amount)
     end)
 end
 
+--// Item price
 local function getItemPrice(name)
     return InfoModule:ReturnItemFromModule(name).recentAveragePrice
 end
