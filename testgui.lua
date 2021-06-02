@@ -1,5 +1,5 @@
 --[[
-    USE AUTOJACKPOT AT OWN RISK, IS BUGGY ATM
+    USE AUTOJACKPOT AT OWN RISK, IS BUGGY ATM (tries to put more than 10 items but cannot)
 ]]
 --// Modules
 local InfoModule = require(game.ReplicatedStorage.Modules.Info)
@@ -57,14 +57,18 @@ local function sellItem(itemName, amount)
 end
 
 --// Item price
-local function getItemPrice(name)
-    return InfoModule:ReturnItemFromModule(name).recentAveragePrice
+local function getItemPrice(name, rolimonsVal)
+    if rolimonsVal == "rolimonsValue" then
+        return InfoModule:ReturnItemFromModule(name).rolimonsValue
+    elseif rolimonsVal == "recentAveragePrice" then
+        return InfoModule:ReturnItemFromModule(name).recentAveragePrice
+    end
 end
 
 --// Checks if item is under max price
 local function isValidItem(name, maxprice)
     if autosell then
-        local RAP = getItemPrice(name)
+        local RAP = getItemPrice(name, "recentAveragePrice")
         return RAP <= maxPrice
     end
     return false
@@ -161,7 +165,7 @@ local function getTotalAmountAbleToPutIn(maxJackpotPrice)
     local itemsForJackpot = {}
     local totalInv = 0
     for itemName, amount in pairs(items) do
-        local price = getItemPrice(itemName)
+        local price = getItemPrice(itemName, "rolimonsValue")
         totalInv = totalInv + (price * amount)
         if itemName == "Interstellar Wings" then
             print(price, totalInv)
@@ -195,6 +199,9 @@ Countdown:GetPropertyChangedSignal("Text"):Connect(function()
                 print(itemName, amount, jackpotTier)
                 spawn(function()
                     game:GetService("ReplicatedStorage").Events.GamesActions:InvokeServer(unpack(args))
+                    pcall(function()
+                        LocalPlayer.PlayerGui.Gui.Frames.Jackpot.SubJackpot.LocalInventory.List[itemName]:Destroy()
+                    end)
                 end)
                 --:InvokeServer("Jackpot", itemName, amount, jackpotTier)
             end
