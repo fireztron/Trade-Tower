@@ -1,5 +1,5 @@
 --[[
-  auto jackpot in progerss!
+    USE AUTOJACKPOT AT OWN RISK, IS BUGGY ATM
 ]]
 --// Modules
 local InfoModule = require(game.ReplicatedStorage.Modules.Info)
@@ -15,6 +15,7 @@ local List = LocalPlayer.PlayerGui.Gui.Frames.Inventory.SubInventory.Holder.List
         --          ["Price"]
         --      }
         --   }
+
 --// Get casetypes info
 local caseTypes = {}; do
     for caseName, caseInfo in pairs(InfoModule.Cases) do
@@ -116,7 +117,7 @@ end
 
 --// Get highest value buyable case (under 20k robux)
 local function getHighestValueBuyableCase()
-    local currentRobux = getRobux(LocalPlayer.PlayerGui.Gui.Hotbar.Stats.Robux.Amount.Text)
+    local currentRobux = convertRobux(LocalPlayer.PlayerGui.Gui.Hotbar.Stats.Robux.Amount.Text)
     local buyableCases = {}
     for caseName, caseInfo in pairs(caseTypes) do
         local price = caseInfo.properties.Price
@@ -160,22 +161,41 @@ local function getTotalAmountAbleToPutIn(maxJackpotPrice)
     local itemsForJackpot = {}
     local totalInv = 0
     for itemName, amount in pairs(items) do
-        local price = caseTypes[itemName].properties.Price
-        if price <= maxJackpotPrice then
-            totalInv = totalInv + (price * amount)
+        local price = getItemPrice(itemName)
+        totalInv = totalInv + (price * amount)
+        if itemName == "Interstellar Wings" then
+            print(price, totalInv)
+        end
+        if totalInv <= maxJackpotPrice then
             itemsForJackpot[itemName] = amount
+        else
+            totalInv = totalInv - (price * amount)
         end
     end
     return totalInv, itemsForJackpot
 end
 
 --// Auto jackpot
-LocalPlayer.PlayerGui.Gui.Frames.Jackpot.SubJackpot:GetPropertyChangedSignal("Text"):Connect(function(value)
-    if autojackpot and value == "1" then
-        local tierMax = (jackpotTier == 1 and 250000) or (jackpotTier == 2 and 500000) or (jackpotTier == 3 and math.huge)
+local Countdown = LocalPlayer.PlayerGui.Gui.Frames.Jackpot.SubJackpot.Countdown
+Countdown:GetPropertyChangedSignal("Text"):Connect(function()
+    local countdownText = Countdown.Text
+    local timeLeft = string.match(countdownText:lower(), "win") ~= "win" and string.gsub(countdownText, "%D", "")
+    if autojackpot and timeLeft == "1" then
+        local tierMax = (jackpotTier == 1 and 250000) or (jackpotTier == 2 and 5000000) or (jackpotTier == 3 and math.huge)
         local totalInv, itemsForJackpot = getTotalAmountAbleToPutIn(tierMax)
+        print(totalInv / (getTotalJackpot() + totalInv))
         if totalInv / (getTotalJackpot() + totalInv) >= (minJackpotChance / 100) then
-            for itemName, amount in pairs(itemsForJackPot) do
+            for itemName, amount in pairs(itemsForJackpot) do
+                local args = {
+                    [1] = "Jackpot",
+                    [2] = itemName,
+                    [3] = amount,
+                    [4] = jackpotTier
+                }
+                print(itemName, amount, jackpotTier)
+                spawn(function()
+                    game:GetService("ReplicatedStorage").Events.GamesActions:InvokeServer(unpack(args))
+                end)
                 --:InvokeServer("Jackpot", itemName, amount, jackpotTier)
             end
         end
@@ -264,6 +284,8 @@ autoselloptions:AddSlider({text = 'Max price to autosell', value = 50000, min = 
     sellCurrentItems()
 end})
 
+window:AddLabel({text = "USE AUTOJACKPOT AT YOUR OWN RISK."})
+
 --// auto jackpot UI
 window:AddToggle({text = 'Auto jackpot', state = autojackpot, callback = function(v) 
     autojackpot = v; 
@@ -271,10 +293,10 @@ end})
 
 --// auto jackpot options UI
 local autojackpotoptions = window:AddFolder("auto jackpot options")
-autojackpotoptions:AddList({text = 'jackpot tier', state = jackpotTier, value = 1, values = {1,2,3}, callback = function(v)
-    jackpotTier = v
+autojackpotoptions:AddList({text = 'jackpot tier', state = jackpotTier, value = 1, values = {2,3}, callback = function(v)
+    jackpotTier = tonumber(v)
 end})
-autojackpotoptions:AddSlider({text = 'minimum jackpot chance', value = 95, min = 1, max = 100, callback = function(v)
+autojackpotoptions:AddSlider({text = 'min jackpot chance', value = 95, min = 1, max = 100, callback = function(v)
     minJackpotChance = v
 end})
 
