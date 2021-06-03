@@ -1,9 +1,10 @@
 --[[
-    USE AUTOJACKPOT AT OWN RISK, IS BUGGY ATM (tries to put more than 10 items but cannot)
+    USE AUTOJACKPOT AT OWN RISK, IS BUGGY ATM
 ]]
 --// Modules
 local InfoModule = require(game.ReplicatedStorage.Modules.Info)
 local MainFunctions = require(game:GetService("Players").LocalPlayer.PlayerGui.Gui.GuiModules.MainFunctions)
+local inv = require(game:GetService("Players").LocalPlayer.PlayerGui.Gui.GuiModules.Inventory)
 
 --// Variables
 local Players = game:GetService("Players")
@@ -143,6 +144,19 @@ local function getHighestValueBuyableCase()
     return targetCaseName
 end
 
+--// Get sorted items for jackpot
+local function getSortedItems()
+    local items = {}
+    for i,v in pairs(inv.PlayersLocalInv) do
+        items[i] = {
+            ["rolimonsValue"] = (getItemPrice(i, "rolimonsValue")),
+            ["name"] = i
+        }
+    end
+    return MainFunctions:ReturnSortedDictionary(items, "rolimonsValue", false, true)
+end
+
+
 --// Total jackpot RAP
 local function getTotalJackpot()
     local total = 0
@@ -161,10 +175,10 @@ end
 
 --// Total available RAP to put in jackpot
 local function getTotalAmountAbleToPutIn(maxJackpotPrice)
-    updateCurrentItems()
     local itemsForJackpot = {}
     local totalInv = 0
-    for itemName, amount in pairs(items) do
+    for _, itemInfo in pairs(getSortedItems()) do
+        local itemName = itemInfo.name
         local price = getItemPrice(itemName, "rolimonsValue")
         totalInv = totalInv + (price * amount)
         if itemName == "Interstellar Wings" then
@@ -320,6 +334,15 @@ end})
 --// Anti afk UI
 window:AddToggle({text = 'Anti Afk', state = antiafk, callback = function(v) 
     antiafk = v; 
+end})
+
+--// test UI
+window:AddButton({text = 'test', callback = function() 
+    for _, itemInfo in pairs(getSortedItems()) do
+        local itemName = itemInfo.name
+        local price = getItemPrice(itemName, "rolimonsValue")
+        print(price)
+    end
 end})
 
 --// Init library
