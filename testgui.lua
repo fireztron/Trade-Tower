@@ -337,12 +337,14 @@ window:AddToggle({text = 'Anti Afk', state = antiafk, callback = function(v)
 end})
 
 --// test UI
-window:AddButton({text = 'test', callback = function() 
+window:AddButton({text = 'test', callback = function()
+    local result = "{"
     for _, itemInfo in pairs(getSortedItems()) do
         local itemName = itemInfo.name
         local price = getItemPrice(itemName, "rolimonsValue")
-        print(price)
+        result = result .. price .. ", "
     end
+    setclipboard(result .. "}")
 end})
 
 --// Init library
