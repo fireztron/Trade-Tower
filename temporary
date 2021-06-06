@@ -184,7 +184,7 @@ NSumClosestLib.NSumClosest = function(arr, n, target)
 end
 
 return NSumClosestLib
-
+--[[
 local sol = NSumClosestLib.NSumClosest(
     {
         [1] = {
@@ -215,3 +215,4 @@ if sol.Success then
 else
     print("No valid solution")
 end
+]]
