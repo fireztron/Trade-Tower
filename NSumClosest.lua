@@ -9,6 +9,8 @@
 	The time complexity for n > 2 can be reduced by n - 1 for O[N^n] time complexity using pointers, however n > 2 is written with a bruteforce method and is slower than if calculated with pointers.
 ]]
 
+local NSumClosestLib = {}
+
 --// Generate case
 function generateCase()
     local arr = {}
@@ -52,7 +54,7 @@ local function getSum(arr, indexes)
     return sum, res
 end
 
-local function solution(arr, n, target)
+NSumClosestLib.NSumClosest = function(arr, n, target)
     local foundSum = false
     local closestSum = math.huge
     local res = {}
@@ -182,7 +184,7 @@ local function solution(arr, n, target)
     end
 end
 
-local sol = solution(
+local sol = NSumClosestLib.NSumClosest(
     {
         [1] = {
             ["rolimonsValue"] = 2278,
