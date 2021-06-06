@@ -67,6 +67,18 @@ local function solution(arr, n, target)
     end
     if minValue > target then return { Success = false } end
     
+    -- Select the last n items from the array and see if the sum of those surpasses target
+    local maxValue = 0
+    for i = #arr, #arr - (n - 1), -1 do
+        maxValue = maxValue + arr[i]
+    end
+    if maxValue < target then 
+        for i = #arr, #arr - (n - 1), -1 do
+            table.insert(res, arr[i])
+        end
+        return { Result = maxValue, MadeWith = res, Success = true } 
+    end
+	
     if n == 1 then
         for _, currentNum in ipairs(arr) do
             if math.abs(target - closestSum) > math.abs(target - currentNum) and currentNum <= target then
