@@ -186,6 +186,7 @@ end
 
 return NSumClosestLib
 
+--[[
 local sol = NSumClosestLib.NSumClosest(
     {
         [1] = {
@@ -215,4 +216,4 @@ if sol.Success then
     print("Solution: " .. sol.Result .. " (" .. result .. ")")
 else
     print("No valid solution")
-end
+end]]
