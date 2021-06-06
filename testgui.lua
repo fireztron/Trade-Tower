@@ -113,6 +113,9 @@ end)
 --// CREDITS TO BEREZAA FOR MONEY LIB !
 local MoneyLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/fireztron/Money-lib/main/trade%20tower%20abbv.lua'))()
 
+--// Custom nsumclosest lib made by fireztron
+local NSumClosestLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/fireztron/Trade-Tower/main/NSumClosest.lua'))()
+
 --// Get amount of robux
 local function convertRobux(num)
     local shortValue = num
@@ -153,7 +156,7 @@ local function getSortedItems()
             ["name"] = i
         }
     end
-    return MainFunctions:ReturnSortedDictionary(items, "rolimonsValue", false, true)
+    return MainFunctions:ReturnSortedDictionary(items, "rolimonsValue", true, true)
 end
 
 
@@ -175,22 +178,14 @@ end
 
 --// Total available RAP to put in jackpot
 local function getTotalAmountAbleToPutIn(maxJackpotPrice)
-    local itemsForJackpot = {}
-    local totalInv = 0
-    for _, itemInfo in pairs(getSortedItems()) do
-        local itemName = itemInfo.name
-        local price = getItemPrice(itemName, "rolimonsValue")
-        totalInv = totalInv + (price * amount)
-        if itemName == "Interstellar Wings" then
-            print(price, totalInv)
-        end
-        if totalInv <= maxJackpotPrice then
-            itemsForJackpot[itemName] = amount
-        else
-            totalInv = totalInv - (price * amount)
-        end
+    local sol = NSumClosestLib.NSumClosest(getSortedItems(), 10, tierMax)
+    if sol.Success then
+        local totalInv = sol.Result
+        local itemsForJackpot = sol.MadeWith
+        return totalInv, itemsForJackpot
+    else
+        return false
     end
-    return totalInv, itemsForJackpot
 end
 
 --// Auto jackpot
@@ -201,16 +196,18 @@ Countdown:GetPropertyChangedSignal("Text"):Connect(function()
     if autojackpot and timeLeft == "1" then
         local tierMax = (jackpotTier == 1 and 250000) or (jackpotTier == 2 and 5000000) or (jackpotTier == 3 and math.huge)
         local totalInv, itemsForJackpot = getTotalAmountAbleToPutIn(tierMax)
-        print(totalInv / (getTotalJackpot() + totalInv))
-        if totalInv / (getTotalJackpot() + totalInv) >= (minJackpotChance / 100) then
-            for itemName, amount in pairs(itemsForJackpot) do
+        if totalInv then
+            print(totalInv / (getTotalJackpot() + totalInv))
+        end
+        if totalInv and totalInv / (getTotalJackpot() + totalInv) >= (minJackpotChance / 100) then
+            for _, itemInfo in pairs(itemsForJackpot) do
                 local args = {
                     [1] = "Jackpot",
-                    [2] = itemName,
+                    [2] = itemInfo.name,
                     [3] = amount,
                     [4] = jackpotTier
                 }
-                print(itemName, amount, jackpotTier)
+                print(itemInfo.name, amount, jackpotTier)
                 spawn(function()
                     game:GetService("ReplicatedStorage").Events.GamesActions:InvokeServer(unpack(args))
                     pcall(function()
@@ -341,10 +338,13 @@ window:AddButton({text = 'test', callback = function()
     local result = "{"
     for _, itemInfo in pairs(getSortedItems()) do
         local itemName = itemInfo.name
-        local price = getItemPrice(itemName, "rolimonsValue")
-        result = result .. price .. ", "
+        local price = itemInfo.Price
+        --result = result .. price .. ", "
+        for a,b in pairs(itemInfo) do
+            print(a,b)
+        end
     end
-    setclipboard(result .. "}")
+    print(result .. "}")
 end})
 
 --// Init library
