@@ -46,7 +46,7 @@ local function getSum(arr, indexes)
     local sum = 0
     local res = {}
     for position, index in ipairs(indexes) do
-        sum = sum + arr[index]
+        sum = sum + arr[index]["rolimonsValue"]
         res[position] = arr[index]
     end
     return sum, res
@@ -195,14 +195,18 @@ local sol = solution(
         [3] = {
             ["rolimonsValue"] = 42042,
             ["name"] = "blazeit"
+        },
+        [4] = {
+            ["rolimonsValue"] = 100000,
+            ["name"] = "bitch"
         }
     },
-1, 50000)
+3, 100000)
 
 if sol.Success then
     local result = ""
     for _, info in pairs(sol.MadeWith) do
-        result = result .. info["rolimonsValue"] .. ", "
+        result = result .. info["name"] .. " = ".. info["rolimonsValue"] .. ", "
     end
     print("Solution: " .. sol.Result .. " (" .. result .. ")")
 else
