@@ -184,6 +184,8 @@ NSumClosestLib.NSumClosest = function(arr, n, target)
     end
 end
 
+return NSumClosestLib
+
 local sol = NSumClosestLib.NSumClosest(
     {
         [1] = {
