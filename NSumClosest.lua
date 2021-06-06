@@ -150,7 +150,12 @@ local function solution(arr, n, target)
                     index = index + 1
                 else
                     --// Reset indexes
-                    index = index - 1
+                    repeat
+                        index = index - 1
+                    until not indexes[index] or not isMaxed(indexes, index, #arr)
+                    if not indexes[index] then
+                        break
+                    end
                     indexes[index] = indexes[index] + 1
                     indexes = resetIndexes(indexes, index)
                     index = #indexes
