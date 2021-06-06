@@ -81,10 +81,11 @@ local function solution(arr, n, target)
     end
 	
     if n == 1 then
-        for _, currentNum in ipairs(arr) do
+        for _, itemInfo in pairs(arr) do
+            local currentNum = itemInfo["rolimonsValue"]
             if math.abs(target - closestSum) > math.abs(target - currentNum) and currentNum <= target then
                 closestSum = currentNum
-                res = {currentNum}
+                res = {itemInfo}
                 foundSum = true
             end	
         end
@@ -196,7 +197,7 @@ local sol = solution(
             ["name"] = "blazeit"
         }
     },
-2, 10000)
+1, 50000)
 
 if sol.Success then
     local result = ""
