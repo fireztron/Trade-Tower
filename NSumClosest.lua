@@ -58,22 +58,23 @@ local function solution(arr, n, target)
     local res = {}
     
     -- Sort the table from lowest to highest
-    table.sort(arr)
+    --table.sort(arr)
     
     -- Select the last n items from the array and see if the sum of those surpasses target
     local minValue = 0
     for i = 1, n, 1 do
-        minValue = minValue + arr[i]
+        minValue = minValue + arr[i]["rolimonsValue"]
     end
     if minValue > target then return { Success = false } end
     
     -- Select the last n items from the array and see if the sum of those surpasses target
     local maxValue = 0
     for i = #arr, #arr - (n - 1), -1 do
-        maxValue = maxValue + arr[i]
+        maxValue = maxValue + arr[i]["rolimonsValue"]
     end
+
     if maxValue < target then 
-        for i = #arr, #arr - (n - 1), -1 do
+        for i = #arr - (n - 1), #arr, 1 do
             table.insert(res, arr[i])
         end
         return { Result = maxValue, MadeWith = res, Success = true } 
@@ -97,20 +98,19 @@ local function solution(arr, n, target)
         local l, r = 1, #arr
     
         while(r >= 1 and l <= #arr) do
-            local sum = arr[l] + arr[r]
+            local sum = arr[l]["rolimonsValue"] + arr[r]["rolimonsValue"]
             if math.abs(target - closestSum) > math.abs(target - sum) and sum <= target then
                 res_l = l
                 res_r = r
                 closestSum = sum
                 foundSum = true
             end
-            if arr[l] + arr[r] > target then
+            if arr[l]["rolimonsValue"] + arr[r]["rolimonsValue"] > target then
                 r = r - 1
             else
                 l = l + 1
             end
         end
-        
         res = {arr[res_l], arr[res_r]}
         if not foundSum then
            return {Success = false} 
@@ -181,18 +181,29 @@ local function solution(arr, n, target)
     end
 end
 
-local cases = {}
-for i = 1, 100 do
-    local arr1, n1, t1 = generateCase()
-    table.sort(arr1)
-    table.insert(cases, { arr = arr1, n = n1, target = t1 })
-end
-for _, case in ipairs(cases) do
-    print("Case: " .. table.concat(case.arr, ",") .. " n = " .. case.n .. " target = " .. case.target)
-    local sol = solution(case.arr, case.n, case.target)
-    if sol.Success then
-        print("Solution: " .. sol.Result .. " (" .. table.concat(sol.MadeWith, ",") .. ")")
-    else
-        print("No valid solution")
+local sol = solution(
+    {
+        [1] = {
+            ["rolimonsValue"] = 2278,
+            ["name"] = "Katana Khaos"
+        },
+        [2] = {
+            ["rolimonsValue"] = 6969,
+            ["name"] = "Daddy"
+        },
+        [3] = {
+            ["rolimonsValue"] = 42042,
+            ["name"] = "blazeit"
+        }
+    },
+2, 10000)
+
+if sol.Success then
+    local result = ""
+    for _, info in pairs(sol.MadeWith) do
+        result = result .. info["rolimonsValue"] .. ", "
     end
+    print("Solution: " .. sol.Result .. " (" .. result .. ")")
+else
+    print("No valid solution")
 end
