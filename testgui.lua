@@ -44,6 +44,7 @@ local highestCaseToAutoBuy = caseNames[#caseNames]
 local maxPrice = 50000
 local jackpotTier = 1
 local minJackpotChance = 95
+local waitTime = .9
 
 --// Quick sell
 local function sellItem(itemName, amount)
@@ -150,13 +151,16 @@ end
 --// Get sorted items for jackpot
 local function getSortedItems()
     local items = {}
-    for i,v in pairs(inv.PlayersLocalInv) do
-        items[i] = {
-            ["rolimonsValue"] = (getItemPrice(i, "rolimonsValue")),
-            ["name"] = i
-        }
+    local inventory = inv.PlayersLocalInv
+    for itemName, itemInfo in pairs(inv.PlayersLocalInv) do
+        for amount = 1, itemInfo.amount do
+            items[#items + 1] = {
+                ["rolimonsValue"] = (getItemPrice(itemName, "rolimonsValue")),
+                ["name"] = itemName
+            }
+        end
     end
-    return MainFunctions:ReturnSortedDictionary(items, "rolimonsValue", true, true)
+    return MainFunctions:ReturnSortedDictionary(items, "rolimonsValue", true, true) --first boolean is which order (lowest to highest), second boolean is to determine if the table returned has itemInfo or not
 end
 
 
@@ -178,7 +182,9 @@ end
 
 --// Total available RAP to put in jackpot
 local function getTotalAmountAbleToPutIn(maxJackpotPrice)
-    local sol = NSumClosestLib.NSumClosest(getSortedItems(), 10, tierMax)
+    local sortedItems = getSortedItems()
+
+    local sol = NSumClosestLib.NSumClosest(sortedItems, n, maxJackpotPrice)
     if sol.Success then
         local totalInv = sol.Result
         local itemsForJackpot = sol.MadeWith
@@ -194,20 +200,21 @@ Countdown:GetPropertyChangedSignal("Text"):Connect(function()
     local countdownText = Countdown.Text
     local timeLeft = string.match(countdownText:lower(), "win") ~= "win" and string.gsub(countdownText, "%D", "")
     if autojackpot and timeLeft == "1" then
+        wait(waitTime)
         local tierMax = (jackpotTier == 1 and 250000) or (jackpotTier == 2 and 5000000) or (jackpotTier == 3 and math.huge)
         local totalInv, itemsForJackpot = getTotalAmountAbleToPutIn(tierMax)
         if totalInv then
-            print(totalInv / (getTotalJackpot() + totalInv))
+            print(totalInv, totalInv / (getTotalJackpot() + totalInv))
         end
         if totalInv and totalInv / (getTotalJackpot() + totalInv) >= (minJackpotChance / 100) then
             for _, itemInfo in pairs(itemsForJackpot) do
                 local args = {
                     [1] = "Jackpot",
                     [2] = itemInfo.name,
-                    [3] = amount,
+                    [3] = 1, --amount
                     [4] = jackpotTier
                 }
-                print(itemInfo.name, amount, jackpotTier)
+                print(itemInfo.name, jackpotTier)
                 spawn(function()
                     game:GetService("ReplicatedStorage").Events.GamesActions:InvokeServer(unpack(args))
                     pcall(function()
@@ -302,22 +309,6 @@ autoselloptions:AddSlider({text = 'Max price to autosell', value = 50000, min = 
     sellCurrentItems()
 end})
 
-window:AddLabel({text = "USE AUTOJACKPOT AT YOUR OWN RISK."})
-
---// auto jackpot UI
-window:AddToggle({text = 'Auto jackpot', state = autojackpot, callback = function(v) 
-    autojackpot = v; 
-end})
-
---// auto jackpot options UI
-local autojackpotoptions = window:AddFolder("auto jackpot options")
-autojackpotoptions:AddList({text = 'jackpot tier', state = jackpotTier, value = 1, values = {2,3}, callback = function(v)
-    jackpotTier = tonumber(v)
-end})
-autojackpotoptions:AddSlider({text = 'min jackpot chance', value = 95, min = 1, max = 100, callback = function(v)
-    minJackpotChance = v
-end})
-
 --// auto click UI
 window:AddToggle({text = 'Auto click', state = autoclick, callback = function(v) 
     autoclick = v; 
@@ -335,16 +326,37 @@ end})
 
 --// test UI
 window:AddButton({text = 'test', callback = function()
-    local result = "{"
-    for _, itemInfo in pairs(getSortedItems()) do
-        local itemName = itemInfo.name
-        local price = itemInfo.Price
-        --result = result .. price .. ", "
-        for a,b in pairs(itemInfo) do
-            print(a,b)
+    local totalInv, itemsForJackpot = getTotalAmountAbleToPutIn(250000)
+    if totalInv then
+        print(totalInv, totalInv / (getTotalJackpot() + totalInv))
+        for _, itemInfo in pairs(itemsForJackpot) do
+            print(itemInfo.name, itemInfo.rolimonsValue)
         end
     end
-    print(result .. "}")
+end})
+
+
+local window2 = lib:CreateWindow('AUTOJACKPOT')
+window2:AddLabel({text = "AUTOJP AT YOUR OWN RISK."})
+
+--// auto jackpot UI
+window2:AddToggle({text = 'Auto jackpot', state = autojackpot, callback = function(v) 
+    autojackpot = v; 
+end})
+
+--// auto jackpot options UI
+local autojackpotoptions = window2:AddFolder("auto jackpot options")
+autojackpotoptions:AddList({text = 'jackpot tier', state = jackpotTier, value = 1, values = {2,3}, callback = function(v)
+    jackpotTier = tonumber(v)
+end})
+autojackpotoptions:AddSlider({text = 'min jackpot chance', value = 95, min = 1, max = 100, callback = function(v)
+    minJackpotChance = v
+end})
+
+--// Wait time UI
+window2:AddLabel({text = "Waits x sec. from 1 sec"})
+autojackpotoptions:AddSlider({text = 'waitTime', value = .9, min = 0, max = 1, float = .01, callback = function(v)
+    waitTime = v
 end})
 
 --// Init library
