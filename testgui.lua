@@ -181,9 +181,7 @@ local function getTotalJackpot()
 end
 
 --// Total available RAP to put in jackpot
-local function getTotalAmountAbleToPutIn(maxJackpotPrice)
-    local sortedItems = getSortedItems()
-    local n = (#sortedItems >= 10 and 10) or (#sortedItems < 10 and #sortedItems)
+local function getTotalAmountAbleToPutIn(sortedItems, n, maxJackpotPrice)
     local sol = NSumClosestLib.NSumClosest(sortedItems, n, maxJackpotPrice)
     if sol.Success then
         local totalInv = sol.Result
@@ -194,6 +192,23 @@ local function getTotalAmountAbleToPutIn(maxJackpotPrice)
     end
 end
 
+local function getMaxAmountAbleToPutIn(sortedItems, n, maxJackpotPrice)
+    local closestSum = math.huge
+    local targetItemsForJackpot
+
+    repeat
+        local totalInv, itemsForJackpot = getTotalAmountAbleToPutIn(sortedItems, n, maxJackpotPrice)
+        local diff = math.abs(maxJackpotPrice - totalInv)
+        if diff <= math.abs(closestSum - totalInv) then
+            closestSum = totalInv
+            targetItemsForJackpot = itemsForJackpot
+        end
+        n = n - 1
+    until
+        n < 1
+    return closestSum, targetItemsForJackpot
+end
+
 --// Auto jackpot
 local Countdown = LocalPlayer.PlayerGui.Gui.Frames.Jackpot.SubJackpot.Countdown
 Countdown:GetPropertyChangedSignal("Text"):Connect(function()
@@ -202,7 +217,9 @@ Countdown:GetPropertyChangedSignal("Text"):Connect(function()
     if autojackpot and timeLeft == "1" then
         wait(waitTime)
         local tierMax = (jackpotTier == 1 and 250000) or (jackpotTier == 2 and 5000000) or (jackpotTier == 3 and math.huge)
-        local totalInv, itemsForJackpot = getTotalAmountAbleToPutIn(tierMax)
+        local sortedItems = getSortedItems()
+        local n = (#sortedItems >= 10 and 10) or (#sortedItems < 10 and #sortedItems)
+        local totalInv, itemsForJackpot = getMaxAmountAbleToPutIn(sortedItems, n, tierMax)
         if totalInv then
             print(totalInv, totalInv / (getTotalJackpot() + totalInv))
         end
