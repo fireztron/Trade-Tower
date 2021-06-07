@@ -1,6 +1,47 @@
 --[[
-    USE AUTOJACKPOT AT OWN RISK, IS BUGGY ATM
+    Jackpot should be working!
+        - Accurately searches for combined item prices closest to the jackpot cap
+    
+    Made by fireztron @ v3rmillion :)
+
+    Hope you enjoyed the script!
 ]]
+
+--// Join discord
+local function copyDiscord()
+    setclipboard("https://discord.gg/3HymEaePFT")
+end
+
+local StarterGui = game:GetService("StarterGui")
+local bindable = Instance.new("BindableFunction")
+
+local function sendNotifcation(titleText, descText)
+    StarterGui:SetCore("SendNotification",{
+        Title = titleText;
+        Text = descText;
+        Icon = "";
+        Duration = 5;
+    })
+end
+
+function bindable.OnInvoke(response)
+    if response == "Yes" then
+        copyDiscord()
+        sendNotifcation("discord link copied", "welcome aboard :)")
+    else
+        sendNotifcation("bitch fuck u", "why dont u wanna join ?? >:(")
+    end
+end
+
+StarterGui:SetCore("SendNotification", {
+	Title = "PPHax Discord",
+	Text = "Copy to clipboard?",
+	Duration = 5,
+	Callback = bindable,
+	Button1 = "Yes",
+	Button2 = "No"
+})
+
 --// Modules
 local InfoModule = require(game.ReplicatedStorage.Modules.Info)
 local MainFunctions = require(game:GetService("Players").LocalPlayer.PlayerGui.Gui.GuiModules.MainFunctions)
@@ -49,6 +90,7 @@ local waitTime = .9
 --// Quick sell
 local function sellItem(itemName, amount)
     spawn(function()
+        List[itemName]:Destroy()
         local args = {
             [1] = "QuickSell",
             [2] = itemName,
@@ -192,6 +234,7 @@ local function getTotalAmountAbleToPutIn(sortedItems, n, maxJackpotPrice)
     end
 end
 
+--// Caculates max value to put in jackpot
 local function getMaxAmountAbleToPutIn(sortedItems, n, maxJackpotPrice)
     local closestSum = math.huge
     local targetItemsForJackpot
@@ -220,10 +263,11 @@ Countdown:GetPropertyChangedSignal("Text"):Connect(function()
         local sortedItems = getSortedItems()
         local n = (#sortedItems >= 10 and 10) or (#sortedItems < 10 and #sortedItems)
         local totalInv, itemsForJackpot = getMaxAmountAbleToPutIn(sortedItems, n, tierMax)
+        local totalJackpot = getTotalJackpot()
         if totalInv then
-            print(totalInv, totalInv / (getTotalJackpot() + totalInv))
+            print(totalInv, totalInv / totalJackpot + totalInv)
         end
-        if totalInv and totalInv / (getTotalJackpot() + totalInv) >= (minJackpotChance / 100) then
+        if totalInv and totalInv / (totalJackpot + totalInv) >= (minJackpotChance / 100) and totalJackpot > 0 then
             for _, itemInfo in pairs(itemsForJackpot) do
                 local args = {
                     [1] = "Jackpot",
@@ -240,6 +284,7 @@ Countdown:GetPropertyChangedSignal("Text"):Connect(function()
                 end)
                 --:InvokeServer("Jackpot", itemName, amount, jackpotTier)
             end
+            sendNotifcation("Jackpot", "attempted to join jackpot")
         end
     end
 end)
@@ -341,15 +386,17 @@ window:AddToggle({text = 'Anti Afk', state = antiafk, callback = function(v)
     antiafk = v; 
 end})
 
---// test UI
-window:AddButton({text = 'test', callback = function()
-    local totalInv, itemsForJackpot = getTotalAmountAbleToPutIn(250000)
+--// join discord ui
+window:AddButton({text = 'copy discord link', callback = function()
+    copyDiscord()
+    sendNotifcation("discord link copied", "welcome aboard :)")
+    --[[local totalInv, itemsForJackpot = getTotalAmountAbleToPutIn(250000)
     if totalInv then
         print(totalInv, totalInv / (getTotalJackpot() + totalInv))
         for _, itemInfo in pairs(itemsForJackpot) do
             print(itemInfo.name, itemInfo.rolimonsValue)
         end
-    end
+    end]]
 end})
 
 
