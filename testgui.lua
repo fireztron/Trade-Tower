@@ -309,8 +309,8 @@ end})
 
 --// auto buy options ui
 local autobuyoptions = window:AddFolder("auto buy options")
-autobuyoptions:AddList({text = 'lowest cost case to autobuy', state = lowestCaseToAutoBuy, value = caseNames[1], values = caseNames, callback = function(v) lowestCaseToAutoBuy = v end})
-autobuyoptions:AddList({text = 'highest cost case to autobuy', state = highestCaseToAutoBuy, value = caseNames[#caseNames], values = caseNames, callback = function(v) highestCaseToAutoBuy = v end})
+autobuyoptions:AddList({text = 'lowest cost case to autobuy', value = caseNames[1], values = caseNames, callback = function(v) lowestCaseToAutoBuy = v end})
+autobuyoptions:AddList({text = 'highest cost case to autobuy', value = caseNames[#caseNames], values = caseNames, callback = function(v) highestCaseToAutoBuy = v end})
 
 --// auto sell UI
 window:AddToggle({text = 'Auto sell', state = autosell, callback = function(v) 
@@ -363,8 +363,8 @@ end})
 
 --// auto jackpot options UI
 local autojackpotoptions = window2:AddFolder("auto jackpot options")
-autojackpotoptions:AddList({text = 'jackpot tier', state = jackpotTier, value = 1, values = {2,3}, callback = function(v)
-    jackpotTier = tonumber(v)
+autojackpotoptions:AddList({text = 'jackpot tier', state = jackpotTierString, value = "1 (250k Cap)", values = {"1 (250k Cap)", "2 (5M Cap)", "3 (INF Cap)"}, callback = function(jackpotTierString)
+    jackpotTier = tonumber(jackpotTierString:sub(1, 1))
 end})
 autojackpotoptions:AddSlider({text = 'min jackpot chance', value = 95, min = 1, max = 100, callback = function(v)
     minJackpotChance = v
