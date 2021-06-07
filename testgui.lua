@@ -241,16 +241,19 @@ local function getMaxAmountAbleToPutIn(sortedItems, n, maxJackpotPrice)
 
     repeat
         local totalInv, itemsForJackpot = getTotalAmountAbleToPutIn(sortedItems, n, maxJackpotPrice)
-        local diff = math.abs(maxJackpotPrice - totalInv)
-        if diff <= math.abs(closestSum - totalInv) then
-            closestSum = totalInv
-            targetItemsForJackpot = itemsForJackpot
+        if totalInv.Success then
+            local diff = math.abs(maxJackpotPrice - totalInv)
+            if diff <= math.abs(closestSum - totalInv) then
+                closestSum = totalInv
+                targetItemsForJackpot = itemsForJackpot
+            end
         end
         n = n - 1
     until
         n < 1
     return closestSum, targetItemsForJackpot
 end
+
 
 --// Auto jackpot
 local Countdown = LocalPlayer.PlayerGui.Gui.Frames.Jackpot.SubJackpot.Countdown
