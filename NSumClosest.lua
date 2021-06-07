@@ -81,7 +81,8 @@ NSumClosestLib.NSumClosest = function(arr, n, target)
         end
         return { Result = maxValue, MadeWith = res, Success = true } 
     end
-	
+    if n == 0 then
+	return {Result = 0, MadeWith = res, Success = true}
     if n == 1 then
         for _, itemInfo in pairs(arr) do
             local currentNum = itemInfo["rolimonsValue"]
