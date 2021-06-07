@@ -287,7 +287,7 @@ Countdown:GetPropertyChangedSignal("Text"):Connect(function()
                 end)
                 --:InvokeServer("Jackpot", itemName, amount, jackpotTier)
             end
-            sendNotifcation("Jackpot", "attempted to join jackpot")
+            sendNotifcation("Jackpot", "joined jackpot")
         end
     end
 end)
