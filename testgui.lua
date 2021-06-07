@@ -287,7 +287,11 @@ Countdown:GetPropertyChangedSignal("Text"):Connect(function()
                 end)
                 --:InvokeServer("Jackpot", itemName, amount, jackpotTier)
             end
-            sendNotifcation("Jackpot", "joined jackpot")
+            sendNotifcation("Jackpot", "Attempted to joined jackpot.")
+	elseif totalInv and totalJackpot <= 0 then
+	    sendNotifcation("Jackpot", "Did not join since there were no participants.")
+	elseif not totalInv then
+	    sendNotifcation("Jackpot", "Failed to join jackpot! You need items to join.")
         end
     end
 end)
