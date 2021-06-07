@@ -241,7 +241,7 @@ local function getMaxAmountAbleToPutIn(sortedItems, n, maxJackpotPrice)
 
     repeat
         local totalInv, itemsForJackpot = getTotalAmountAbleToPutIn(sortedItems, n, maxJackpotPrice)
-        if totalInv.Success then
+        if totalInv then
             local diff = math.abs(maxJackpotPrice - totalInv)
             if diff <= math.abs(closestSum - totalInv) then
                 closestSum = totalInv
