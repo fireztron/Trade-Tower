@@ -183,7 +183,7 @@ end
 --// Total available RAP to put in jackpot
 local function getTotalAmountAbleToPutIn(maxJackpotPrice)
     local sortedItems = getSortedItems()
-
+    local n = (#sortedItems >= 10 and 10) or (#sortedItems < 10 and #sortedItems)
     local sol = NSumClosestLib.NSumClosest(sortedItems, n, maxJackpotPrice)
     if sol.Success then
         local totalInv = sol.Result
