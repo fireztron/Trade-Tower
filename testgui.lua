@@ -1,6 +1,6 @@
 --[[
     Jackpot should be working!
-        - Accurately searches for combined item prices closest to the jackpot cap (may freeze if you have many items, will solve problem in future)
+        - Accurately searches for combined item prices closest to the jackpot cap (may freeze if you have many items, will fix issue in future)
     
     Made by fireztron @ v3rmillion :)
 
