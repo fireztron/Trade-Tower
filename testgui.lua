@@ -344,7 +344,7 @@ end
 
 --// lib stuff uwuware i think
 local lib = loadstring(game:HttpGet('https://raw.githubusercontent.com/fireztron/uwuware-ui-library/main/ui.lua', true))()
-local window = lib:CreateWindow('Trade Tower GUI')
+local window = lib:CreateWindow('PPHAX GUI - Trade Tower')
 window:AddLabel({text = "fireztron @ v3rmillion"})
 
 --// auto buy UI
