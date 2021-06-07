@@ -421,10 +421,10 @@ autojackpotoptions:AddSlider({text = 'min jackpot chance', value = 95, min = 1, 
 end})
 
 --// Wait time UI
-autojackpotoptions:AddLabel({text = "Waits x sec. from 1 sec"})
 autojackpotoptions:AddSlider({text = 'waitTime', value = .9, min = 0, max = 1, float = .01, callback = function(v)
     waitTime = v
 end})
+autojackpotoptions:AddLabel({text = "Waits x sec. from 1 sec"})
 
 --// Init library
 lib:Init()
