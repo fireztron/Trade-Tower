@@ -82,8 +82,8 @@ NSumClosestLib.NSumClosest = function(arr, n, target)
         return { Result = maxValue, MadeWith = res, Success = true } 
     end
     if n == 0 then
-	return {Result = 0, MadeWith = res, Success = true}
-    if n == 1 then
+        return {Result = 0, MadeWith = res, Success = true}
+    elseif n == 1 then
         for _, itemInfo in pairs(arr) do
             local currentNum = itemInfo["rolimonsValue"]
             if math.abs(target - closestSum) > math.abs(target - currentNum) and currentNum <= target then
