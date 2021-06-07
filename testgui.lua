@@ -34,7 +34,7 @@ function bindable.OnInvoke(response)
 end
 
 StarterGui:SetCore("SendNotification", {
-	Title = "PPHax Discord",
+	Title = "PPHAX Discord",
 	Text = "Copy to clipboard?",
 	Duration = 5,
 	Callback = bindable,
