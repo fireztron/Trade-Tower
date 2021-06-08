@@ -261,6 +261,7 @@ Countdown:GetPropertyChangedSignal("Text"):Connect(function()
     local countdownText = Countdown.Text
     local timeLeft = string.match(countdownText:lower(), "win") ~= "win" and string.gsub(countdownText, "%D", "")
     if autojackpot and timeLeft == "1" then
+	wait(waitTime)
         local tierMax = (jackpotTier == 1 and 250000) or (jackpotTier == 2 and 5000000) or (jackpotTier == 3 and math.huge)
         local sortedItems = getSortedItems()
         local n = (#sortedItems >= 10 and 10) or (#sortedItems < 10 and #sortedItems)
@@ -269,7 +270,6 @@ Countdown:GetPropertyChangedSignal("Text"):Connect(function()
         if totalInv then
             print(totalInv, totalInv / totalJackpot + totalInv)
         end
-	wait(waitTime)
         if totalInv and totalInv / (totalJackpot + totalInv) >= (minJackpotChance / 100) and totalJackpot > 0 then
             for _, itemInfo in pairs(itemsForJackpot) do
                 local args = {
