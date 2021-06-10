@@ -15,7 +15,7 @@ end
 local StarterGui = game:GetService("StarterGui")
 local bindable = Instance.new("BindableFunction")
 
-local function sendNotifcation(titleText, descText)
+local function sendNotification(titleText, descText)
     StarterGui:SetCore("SendNotification",{
         Title = titleText;
         Text = descText;
@@ -27,9 +27,9 @@ end
 function bindable.OnInvoke(response)
     if response == "Yes" then
         copyDiscord()
-        sendNotifcation("discord link copied", "welcome aboard :)")
+        sendNotification("discord link copied", "welcome aboard :)")
     else
-        sendNotifcation("bitch fuck u", "why dont u wanna join ?? >:(")
+        sendNotification("bitch fuck u", "why dont u wanna join ?? >:(")
     end
 end
 
@@ -86,6 +86,7 @@ local maxPrice = 50000
 local jackpotTier = 1
 local minJackpotChance = 95
 local waitTime = .9
+local quicksearch = false
 
 --// Quick sell
 local function sellItem(itemName, amount)
@@ -224,7 +225,12 @@ end
 
 --// Total available RAP to put in jackpot
 local function getTotalAmountAbleToPutIn(sortedItems, n, maxJackpotPrice)
-    local sol = NSumClosestLib.NSumClosest(sortedItems, n, maxJackpotPrice)
+    local sol
+    if quicksearch then
+        sol = NSumClosestLib.QuickNSumClosest(sortedItems, n, maxJackpotPrice)
+    else
+        sol = NSumClosestLib.NSumClosest(sortedItems, n, maxJackpotPrice)
+    end
     if sol.Success then
         local totalInv = sol.Result
         local itemsForJackpot = sol.MadeWith
@@ -261,7 +267,7 @@ Countdown:GetPropertyChangedSignal("Text"):Connect(function()
     local countdownText = Countdown.Text
     local timeLeft = string.match(countdownText:lower(), "win") ~= "win" and string.gsub(countdownText, "%D", "")
     if autojackpot and timeLeft == "1" then
-	wait(waitTime)
+        wait(waitTime)
         local tierMax = (jackpotTier == 1 and 250000) or (jackpotTier == 2 and 5000000) or (jackpotTier == 3 and math.huge)
         local sortedItems = getSortedItems()
         local n = (#sortedItems >= 10 and 10) or (#sortedItems < 10 and #sortedItems)
@@ -287,11 +293,13 @@ Countdown:GetPropertyChangedSignal("Text"):Connect(function()
                 end)
                 --:InvokeServer("Jackpot", itemName, amount, jackpotTier)
             end
-            sendNotifcation("Jackpot", "Attempted to joined jackpot.")
-	elseif totalInv and totalJackpot <= 0 then
-	    sendNotifcation("Jackpot", "Did not join since there were no participants.")
-	elseif not totalInv then
-	    sendNotifcation("Jackpot", "Failed to join jackpot! You need items to join.")
+            sendNotification("Jackpot", "Attempted to joined jackpot.")
+        elseif totalInv and totalJackpot <= 0 then
+            sendNotification("Jackpot", "Did not join since there were no participants.")
+        elseif totalInv / (totalJackpot + totalInv) < (minJackpotChance / 100) then
+            sendNotification("Jackpot", "% not high enough: " .. totalInv / (totalJackpot + totalInv) * 100 .. "% | " .. minJackpotChance .. "%")
+        elseif not totalInv then
+            sendNotification("Jackpot", "Failed to join jackpot! You need items to join.")
         end
     end
 end)
@@ -396,7 +404,7 @@ end})
 --// join discord ui
 window:AddButton({text = 'copy discord link', callback = function()
     copyDiscord()
-    sendNotifcation("discord link copied", "welcome aboard :)")
+    sendNotification("discord link copied", "welcome aboard :)")
     --[[local totalInv, itemsForJackpot = getTotalAmountAbleToPutIn(250000)
     if totalInv then
         print(totalInv, totalInv / (getTotalJackpot() + totalInv))
@@ -417,6 +425,10 @@ end})
 
 --// auto jackpot options UI
 local autojackpotoptions = window2:AddFolder("auto jackpot options")
+autojackpotoptions:AddToggle({text = 'Quick search', state = quicksearch, callback = function(v) 
+    quicksearch = v; 
+end})
+autojackpotoptions:AddLabel({text = "quick s. may not be accurate"})
 autojackpotoptions:AddList({text = 'jackpot tier', state = jackpotTierString, value = "1 (250k Cap)", values = {"1 (250k Cap)", "2 (5M Cap)", "3 (INF Cap)"}, callback = function(jackpotTierString)
     jackpotTier = tonumber(jackpotTierString:sub(1, 1))
 end})
