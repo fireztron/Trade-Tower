@@ -48,6 +48,7 @@ local MainFunctions = require(game:GetService("Players").LocalPlayer.PlayerGui.G
 local inv = require(game:GetService("Players").LocalPlayer.PlayerGui.Gui.GuiModules.Inventory)
 
 --// Variables
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local List = LocalPlayer.PlayerGui.Gui.Frames.Inventory.SubInventory.Holder.List
@@ -191,6 +192,48 @@ local function getHighestValueBuyableCase()
     return targetCaseName
 end
 
+--// Jackpot Variables
+local Countdown = LocalPlayer.PlayerGui.Gui.Frames.Jackpot.SubJackpot.Countdown
+local jackpotLPInfo = {
+    [1] = {
+        ["total"] = 0,
+        ["itemsAlreadyIn"] = 0
+    },
+    [2] = {
+        ["total"] = 0,
+        ["itemsAlreadyIn"] = 0
+    },
+    [3] = {
+        ["total"] = 0,
+        ["itemsAlreadyIn"] = 0
+    }
+}
+
+local function resetJackpotLPInfo()
+    for _, tier in ipairs(jackpotLPInfo) do
+        for index, value in pairs(tier) do
+            tier[index] = 0
+        end
+    end
+end
+
+Countdown:GetPropertyChangedSignal("Text"):Connect(function()
+    local countdownText = Countdown.Text
+    local resetted = (string.match(countdownText:lower(), "win") == "win" or string.match(countdownText:lower(), "won") == "won")
+    if resetted then
+        resetJackpotLPInfo()
+        print("reset")
+    end
+end)
+
+ReplicatedStorage:WaitForChild("Events"):WaitForChild("DataSend").OnClientEvent:Connect(function(signature, name, value, tier)
+    if signature == "JackpotItem" and name == LocalPlayer.Name then
+        jackpotLPInfo[tier]["total"] += value
+        jackpotLPInfo[tier]["itemsAlreadyIn"] += 1
+        print("total now:", jackpotLPInfo[tier]["total"], "itemsAlreadyIn now:", jackpotLPInfo[tier]["itemsAlreadyIn"])
+    end
+end)
+
 --// Get sorted items for jackpot
 local function getSortedItems()
     local items = {}
@@ -257,12 +300,11 @@ local function getMaxAmountAbleToPutIn(sortedItems, n, maxJackpotPrice)
         n = n - 1
     until
         n < 1
-    return closestSum, targetItemsForJackpot
+    return closestSum + jackpotLPInfo[jackpotTier]["total"], targetItemsForJackpot
 end
 
 
 --// Auto jackpot
-local Countdown = LocalPlayer.PlayerGui.Gui.Frames.Jackpot.SubJackpot.Countdown
 Countdown:GetPropertyChangedSignal("Text"):Connect(function()
     local countdownText = Countdown.Text
     local timeLeft = string.match(countdownText:lower(), "win") ~= "win" and string.gsub(countdownText, "%D", "")
@@ -270,13 +312,16 @@ Countdown:GetPropertyChangedSignal("Text"):Connect(function()
         wait(waitTime)
         local tierMax = (jackpotTier == 1 and 250000) or (jackpotTier == 2 and 5000000) or (jackpotTier == 3 and math.huge)
         local sortedItems = getSortedItems()
-        local n = (#sortedItems >= 10 and 10) or (#sortedItems < 10 and #sortedItems)
-        local totalInv, itemsForJackpot = getMaxAmountAbleToPutIn(sortedItems, n, tierMax)
+        local itemsAlreadyIn = jackpotLPInfo[jackpotTier]["itemsAlreadyIn"]
+        local LPTotalAlreadyIn = jackpotLPInfo[jackpotTier]["total"]
+        local n = (#sortedItems + itemsAlreadyIn >= 10 and 10 - itemsAlreadyIn) or (#sortedItems + itemsAlreadyIn < 10 and #sortedItems)
+        local totalInv, itemsForJackpot = getMaxAmountAbleToPutIn(sortedItems, n, tierMax - LPTotalAlreadyIn)
         local totalJackpot = getTotalJackpot()
+
         if totalInv then
             print(totalInv, totalInv / totalJackpot + totalInv)
         end
-        if totalInv and totalInv / (totalJackpot + totalInv) >= (minJackpotChance / 100) and totalJackpot > 0 then
+        if totalInv and totalInv / (totalJackpot + totalInv) >= (minJackpotChance / 100) and totalJackpot - LPTotalAlreadyIn > 0 then
             for _, itemInfo in pairs(itemsForJackpot) do
                 local args = {
                     [1] = "Jackpot",
@@ -294,12 +339,14 @@ Countdown:GetPropertyChangedSignal("Text"):Connect(function()
                 --:InvokeServer("Jackpot", itemName, amount, jackpotTier)
             end
             sendNotification("Jackpot", "Attempted to joined jackpot.")
-        elseif totalInv and totalJackpot <= 0 then
+        elseif not totalInv then
+            sendNotification("Jackpot", "Failed to join jackpot! You need items to join.")
+        elseif totalJackpot <= 0 then
             sendNotification("Jackpot", "Did not join since there were no participants.")
         elseif totalInv / (totalJackpot + totalInv) < (minJackpotChance / 100) then
             sendNotification("Jackpot", "% not high enough: " .. totalInv / (totalJackpot + totalInv) * 100 .. "% | " .. minJackpotChance .. "%")
-        elseif not totalInv then
-            sendNotification("Jackpot", "Failed to join jackpot! You need items to join.")
+        elseif totalJackpot - LPTotalAlreadyIn <= 0 then
+            sendNotification("Jackpot", "You were the only one participating! Did not join.")
         end
     end
 end)
