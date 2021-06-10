@@ -1,12 +1,18 @@
 --[[
-	For n = 1:
-		Time complexity = O[1]
-	For n = 2:
-		Time complexity = O[2]
-	For n > 2:
-		Time complexity = O[N^n]
+    -= Accurate Search =-
+        For n = 1:
+            Time complexity = O[1]
+        For n = 2:
+            Time complexity = O[2]
+        For n > 2:
+            Time complexity = O[N^n]
 
-	The time complexity for n > 2 can be reduced by n - 1 for O[N^n] time complexity using pointers, however n > 2 is written with a bruteforce method and is slower than if calculated with pointers.
+            The time complexity for n > 2 can be reduced by n - 1 for O[N^n] time complexity using pointers, however n > 2 is written with a bruteforce method and is slower than if calculated with pointers.
+
+    -= Quick Search =-
+        Time complexity = O(n)
+    
+        May not be as accurate.
 ]]
 
 local NSumClosestLib = {}
@@ -54,6 +60,7 @@ local function getSum(arr, indexes)
     return sum, res
 end
 
+--// Accurately finds closest items
 NSumClosestLib.NSumClosest = function(arr, n, target)
     local foundSum = false
     local closestSum = math.huge
@@ -185,10 +192,41 @@ NSumClosestLib.NSumClosest = function(arr, n, target)
     end
 end
 
+--// Uses greedy algorithm
+NSumClosestLib.QuickNSumClosest = function(arr, n, target)
+    if arr[1]["rolimonsValue"] > target then
+        return {Success = false}
+    end
+    local res = {}
+    local CurrentSum = 0
+    local Adds = 0
+
+    for _, itemInfo in ipairs(arr) do
+        local Number = itemInfo["rolimonsValue"]
+        if (CurrentSum + Number <= target) then
+            CurrentSum += Number
+
+            Adds += 1
+            
+            table.insert(res, itemInfo)
+
+            if (Adds == n or CurrentSum == target) then
+                break
+            end
+        end
+    end
+    
+    if Adds ~= n then
+        return {Success = false}
+    end
+
+    return {Result = CurrentSum, MadeWith = res, Success = true}
+end
+
 return NSumClosestLib
 
 --[[
-local sol = NSumClosestLib.NSumClosest(
+local sol = NSumClosestLib.QuickNSumClosest(
     {
         [1] = {
             ["rolimonsValue"] = 2278,
