@@ -88,6 +88,27 @@ local jackpotTier = 1
 local minJackpotChance = 95
 local waitTime = .9
 local quicksearch = false
+local minAutomarketSell = 50000
+local maxAutomarketSell = 9e9
+local percentToMarketSell = 104
+
+--// Remove every item u own from the marketplace
+local function removeAllFromMarketPlace()
+    for _, frame in pairs(LocalPlayer.PlayerGui.Gui.Frames.Market.SubMarket.Holder.List:GetChildren()) do
+        if frame:IsA("Frame") and frame.Name == LocalPlayer.Name then
+            local itemName = frame:WaitForChild("ItemName").Text
+            spawn(function()
+                local args = {
+                    [1] = "Marketplace",
+                    [2] = itemName
+                }
+
+                game:GetService("ReplicatedStorage").Events.InventoryActions:InvokeServer(unpack(args))
+            end)
+        end
+    end
+    marketItemsLPInfo = {}
+end
 
 --// Quick sell
 local function sellItem(itemName, amount)
@@ -98,6 +119,20 @@ local function sellItem(itemName, amount)
             [2] = itemName,
             [3] = amount
         }
+        game:GetService("ReplicatedStorage").Events.InventoryActions:InvokeServer(unpack(args))
+    end)
+end
+
+--// Market sell
+local function marketSellItem(itemName, amount, value)
+    spawn(function()
+        local args = {
+            [1] = "Marketplace",
+            [2] = itemName,
+            [3] = value,
+            [4] = amount
+        }
+
         game:GetService("ReplicatedStorage").Events.InventoryActions:InvokeServer(unpack(args))
     end)
 end
@@ -113,9 +148,13 @@ end
 
 --// Checks if item is under max price
 local function isValidItem(name, maxprice)
-    if autosell then
-        local RAP = getItemPrice(name, "recentAveragePrice")
-        return RAP <= maxPrice
+    local RAP = getItemPrice(name, "recentAveragePrice")
+    local value = getItemPrice(name, "rolimonsValue")
+    print(automarketplace, value >= minAutomarketSell, value <= maxAutomarketSell)
+    if automarketplace and (value >= minAutomarketSell and value <= maxAutomarketSell) then
+        return true, "marketsell", value * percentToMarketSell
+    elseif autosell and RAP <= maxPrice then
+        return true, "sell"
     end
     return false
 end
@@ -140,8 +179,13 @@ updateCurrentItems()
 local function sellCurrentItems()
     updateCurrentItems()
     for itemName, amount in pairs(items) do
-        if isValidItem(itemName, maxPrice) then
-            sellItem(itemName)
+        local valid, sellType, value = isValidItem(itemName, maxPrice)
+        if valid then
+            if sellType == "sell" then
+                sellItem(itemName, amount)
+            elseif sellType == "marketsell" then
+                marketSellItem(itemName, amount, value)
+            end
         end
     end
 end
@@ -149,8 +193,13 @@ end
 --// Sell items being added
 List.ChildAdded:Connect(function(item)
     if item:IsA("Frame") then
-        if isValidItem(item.Name, maxPrice) then
-            sellItem(item.Name)
+        local valid, sellType, value = isValidItem(itemName, maxPrice)
+        if valid then
+            if sellType == "sell" then
+                sellItem(itemName, amount)
+            elseif sellType == "marketsell" then
+                marketSellItem(itemName, amount, value)
+            end
         end
     end
 end)
@@ -432,6 +481,10 @@ autoselloptions:AddSlider({text = 'Max price to autosell', value = 50000, min = 
     maxPrice = v
     sellCurrentItems()
 end})
+autoselloptions:AddToggle({text = 'pure rap only', state = pureraponly, callback = function(v) 
+    pureraponly = v; 
+end})
+autoselloptions:AddLabel({text = "quicksells if rap = value"})
 
 --// auto click UI
 window:AddToggle({text = 'Auto click', state = autoclick, callback = function(v) 
@@ -488,6 +541,36 @@ autojackpotoptions:AddSlider({text = 'waitTime', value = .9, min = 0, max = 1, f
     waitTime = v
 end})
 autojackpotoptions:AddLabel({text = "Waits x sec. from 1 sec"})
+
+
+local window3 = lib:CreateWindow('AUTOMARKETPLACE')
+window3:AddLabel({text = "AUTOMP AT YOUR OWN RISK."})
+window3:AddLabel({text = "AUTOMP MAY BE BUGGY."})
+
+--// auto marketplace UI
+window3:AddToggle({text = 'Auto add to marketplace', state = automarketplace, callback = function(v) 
+    automarketplace = v;
+    sellCurrentItems()
+end})
+
+--// auto marketplace options UI
+local automarketplaceoptions = window3:AddFolder("auto marketplace options")
+automarketplaceoptions:AddSlider({text = 'min value to put up', value = 50000, min = 0, max = 9e9, float = 1000, callback = function(v)
+    minAutomarketSell = v
+end})
+automarketplaceoptions:AddSlider({text = 'max value to put up', value = 9e9, min = 0, max = 9e9, float = 1000, callback = function(v)
+    maxAutomarketSell = v
+end})
+automarketplaceoptions:AddSlider({text = 'percent of value to sell', value = 104, min = 10, max = 500, float = 1, callback = function(v)
+    percentToMarketSell = v/100
+end})
+automarketplaceoptions:AddLabel({text = "warning: it will do value of ur item"})
+automarketplaceoptions:AddLabel({text = "multiplied by percentage/100"})
+
+--// remove items from market UI
+window3:AddButton({text = 'remove ur items from market', callback = function()
+    removeAllFromMarketPlace()
+end})
 
 --// Init library
 lib:Init()
