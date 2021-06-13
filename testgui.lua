@@ -483,7 +483,8 @@ autoselloptions:AddSlider({text = 'Max price to autosell', value = 50000, min = 
     sellCurrentItems()
 end})
 autoselloptions:AddToggle({text = 'pure rap only', state = pureraponly, callback = function(v) 
-    pureraponly = v; 
+    pureraponly = v;
+    sellCurrentItems()
 end})
 autoselloptions:AddLabel({text = "quicksells if rap = value"})
 
