@@ -90,7 +90,7 @@ local waitTime = .9
 local quicksearch = false
 local minAutomarketSell = 50000
 local maxAutomarketSell = 9e9
-local percentToMarketSell = 104
+local percentToMarketSell = 104/100
 
 --// Remove every item u own from the marketplace
 local function removeAllFromMarketPlace()
@@ -125,6 +125,7 @@ end
 
 --// Market sell
 local function marketSellItem(itemName, amount, value)
+    print(value)
     spawn(function()
         local args = {
             [1] = "Marketplace",
