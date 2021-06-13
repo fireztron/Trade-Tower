@@ -153,7 +153,7 @@ local function isValidItem(name, maxprice)
     print(automarketplace, value >= minAutomarketSell, value <= maxAutomarketSell)
     if automarketplace and (value >= minAutomarketSell and value <= maxAutomarketSell) then
         return true, "marketsell", value * percentToMarketSell
-    elseif autosell and RAP <= maxPrice then
+    elseif (autosell and RAP <= maxPrice) and (not pureraponly or RAP == value) then
         return true, "sell"
     end
     return false
@@ -193,12 +193,12 @@ end
 --// Sell items being added
 List.ChildAdded:Connect(function(item)
     if item:IsA("Frame") then
-        local valid, sellType, value = isValidItem(itemName, maxPrice)
+        local valid, sellType, value = isValidItem(item.Name, maxPrice)
         if valid then
             if sellType == "sell" then
-                sellItem(itemName, amount)
+                sellItem(item.Name, amount)
             elseif sellType == "marketsell" then
-                marketSellItem(itemName, amount, value)
+                marketSellItem(item.Name, amount, value)
             end
         end
     end
@@ -557,9 +557,11 @@ end})
 local automarketplaceoptions = window3:AddFolder("auto marketplace options")
 automarketplaceoptions:AddSlider({text = 'min value to put up', value = 50000, min = 0, max = 9e9, float = 1000, callback = function(v)
     minAutomarketSell = v
+    sellCurrentItems()
 end})
 automarketplaceoptions:AddSlider({text = 'max value to put up', value = 9e9, min = 0, max = 9e9, float = 1000, callback = function(v)
     maxAutomarketSell = v
+    sellCurrentItems()
 end})
 automarketplaceoptions:AddSlider({text = 'percent of value to sell', value = 104, min = 10, max = 500, float = 1, callback = function(v)
     percentToMarketSell = v/100
