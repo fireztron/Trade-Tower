@@ -116,7 +116,9 @@ end
 --// Quick sell
 local function sellItem(itemName, amount)
     spawn(function()
-        List[itemName]:Destroy()
+	pcall(function()
+       		List[itemName]:Destroy()
+	end)
         local args = {
             [1] = "QuickSell",
             [2] = itemName,
