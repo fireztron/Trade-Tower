@@ -46,6 +46,7 @@ StarterGui:SetCore("SendNotification", {
 local InfoModule = require(game.ReplicatedStorage.Modules.Info)
 local MainFunctions = require(game:GetService("Players").LocalPlayer.PlayerGui.Gui.GuiModules.MainFunctions)
 local inv = require(game:GetService("Players").LocalPlayer.PlayerGui.Gui.GuiModules.Inventory)
+local AuctionFunctions = require(game:GetService("Players").LocalPlayer.PlayerGui.AuctionBoard.AuctionFunctions)
 
 --// Variables
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -91,6 +92,8 @@ local quicksearch = false
 local minAutomarketSell = 50000
 local maxAutomarketSell = 9e9
 local percentToMarketSell = 104/100
+local maxPercentOfValueToBid = 70/100
+local autoAuctionWaitTime = .9
 
 --// Remove every item u own from the marketplace
 local function removeAllFromMarketPlace()
@@ -401,6 +404,49 @@ Countdown:GetPropertyChangedSignal("Text"):Connect(function()
     end
 end)
 
+--// Auction Variables
+local auctionBoard = LocalPlayer.PlayerGui.AuctionBoard
+local auctionCountdown = auctionBoard.Status
+local auctionHeader = auctionBoard.Header
+local auctionBidders = auctionBoard.Bidders
+
+local function bidAuction(num)
+    local args = {
+        [1] = "AuctionBid",
+        [2] = num
+    }
+    game:GetService("ReplicatedStorage").Events.GamesActions:InvokeServer(unpack(args))
+end
+
+--// Get top bidder
+local function getTopAuctionBid()
+    local last
+    for playerName, bid in pairs(AuctionFunctions.BidTable) do
+        last = bid
+        if playerName == LocalPlayer.Name then
+            last = nil
+        end
+    end
+    return bid
+end
+
+--// Auto auctionbid
+auctionCountdown:GetPropertyChangedSignal("Text"):Connect(function()
+    local countdownText = auctionCountdown.Text
+    local timeLeft = string.match(countdownText:lower(), "win") ~= "win" and string.gsub(countdownText, "%D", "")
+    if autobidtoauction and timeLeft == "1" then
+        wait(autoAuctionWaitTime)
+        local itemName = string.match(auctionHeader.Text, "%(.*%)"):gsub("[%(%)]","")
+        local value = getItemPrice(itemName, "rolimonsValue")
+        local topBid = getTopAuctionBid()
+        if not topBid then
+            bidAuction(value * .6)
+        elseif topBid/value <= maxPercentOfValueToBid then
+            bidAuction(topBid + 1e-307) --smallest fucking number lmao
+        end
+    end
+end)
+
 --// Auto click
 spawn(function()
     while true do
@@ -575,6 +621,27 @@ automarketplaceoptions:AddLabel({text = "multiplied by percentage/100"})
 window3:AddButton({text = 'remove ur items from market', callback = function()
     removeAllFromMarketPlace()
 end})
+
+
+local window4 = lib:CreateWindow('Auto auctionbid')
+window4:AddLabel({text = "AUTOBID IS STILL IN TESTING"})
+window4:AddLabel({text = "Min. % of value is 60%"})
+
+--// auto auctionbid UI
+window4:AddToggle({text = 'Auto bid to auction', state = autobidtoauction, callback = function(v) 
+    autobidtoauction = v;
+end})
+
+--// auto auctionbid options UI
+local autoauctionbid = window4:AddFolder("auto auctionbid options")
+autoauctionbid:AddSlider({text = 'max % of value to bid', value = 70, min = 60, max = 200, float = 1, callback = function(v)
+    maxPercentOfValueToBid = v/100
+end})
+--// Wait time UI
+autoauctionbid:AddSlider({text = 'waitTime', value = .9, min = 0, max = 1, float = .01, callback = function(v)
+    autoAuctionWaitTime = v
+end})
+autoauctionbid:AddLabel({text = "Waits x sec. from 1 sec"})
 
 --// Init library
 lib:Init()
