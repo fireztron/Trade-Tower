@@ -369,7 +369,7 @@ Countdown:GetPropertyChangedSignal("Text"):Connect(function()
         local sortedItems = getSortedItems()
         local itemsAlreadyIn = jackpotLPInfo[jackpotTier]["itemsAlreadyIn"]
         local LPTotalAlreadyIn = jackpotLPInfo[jackpotTier]["total"]
-        local n = (jackpotTier == 3 and #sortedItems + itemsAlreadyIn) or (#sortedItems + itemsAlreadyIn >= 10 and 10 - itemsAlreadyIn) or (#sortedItems + itemsAlreadyIn < 10 and #sortedItems)
+        local n = (#sortedItems + itemsAlreadyIn >= 10 and 10 - itemsAlreadyIn) or (#sortedItems + itemsAlreadyIn < 10 and #sortedItems)
         local totalInv, itemsForJackpot = getMaxAmountAbleToPutIn(sortedItems, n, tierMax - LPTotalAlreadyIn)
         local totalJackpot = getTotalJackpot()
 
