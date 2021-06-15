@@ -277,7 +277,7 @@ Countdown:GetPropertyChangedSignal("Text"):Connect(function()
     local resetted = (string.match(countdownText:lower(), "win") == "win" or string.match(countdownText:lower(), "won") == "won")
     if resetted then
         resetJackpotLPInfo()
-        print("reset")
+        --print("reset")
     end
 end)
 
@@ -285,7 +285,7 @@ ReplicatedStorage:WaitForChild("Events"):WaitForChild("DataSend").OnClientEvent:
     if signature == "JackpotItem" and name == LocalPlayer.Name then
         jackpotLPInfo[tier]["total"] += value
         jackpotLPInfo[tier]["itemsAlreadyIn"] += 1
-        print("total now:", jackpotLPInfo[tier]["total"], "itemsAlreadyIn now:", jackpotLPInfo[tier]["itemsAlreadyIn"])
+        --print("total now:", jackpotLPInfo[tier]["total"], "itemsAlreadyIn now:", jackpotLPInfo[tier]["itemsAlreadyIn"])
     end
 end)
 
