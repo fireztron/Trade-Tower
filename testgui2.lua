@@ -46,6 +46,7 @@ StarterGui:SetCore("SendNotification", {
 local InfoModule = require(game.ReplicatedStorage.Modules.Info)
 local MainFunctions = require(game:GetService("Players").LocalPlayer.PlayerGui.Gui.GuiModules.MainFunctions)
 local inv = require(game:GetService("Players").LocalPlayer.PlayerGui.Gui.GuiModules.Inventory)
+local AuctionFunctions = require(game:GetService("Players").LocalPlayer.PlayerGui.AuctionBoard.AuctionFunctions)
 
 --// Variables
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -90,30 +91,34 @@ local waitTime = .9
 local quicksearch = false
 local minAutomarketSell = 50000
 local maxAutomarketSell = 9e9
-local valueToMarketSell = -1000
+local percentToMarketSell = 104/100
+local maxPercentOfValueToBid = 70/100
+local autoAuctionWaitTime = .9
 
---// Marketplace items
-local marketItemsLPInfo = {}
-
+--// Remove every item u own from the marketplace
 local function removeAllFromMarketPlace()
-    for _, itemInfo in pairs(marketItemsLPInfo) do
-        local itemName = itemInfo.name
-        local amount = itemInfo.amount
-        spawn(function()
-            local args = {
-                [1] = "Marketplace",
-                [2] = "Interstellar Wings"
-            }
+    for _, frame in pairs(LocalPlayer.PlayerGui.Gui.Frames.Market.SubMarket.Holder.List:GetChildren()) do
+        if frame:IsA("Frame") and frame.Name == LocalPlayer.Name then
+            local itemName = frame:WaitForChild("ItemName").Text
+            spawn(function()
+                local args = {
+                    [1] = "Marketplace",
+                    [2] = itemName
+                }
 
-            game:GetService("ReplicatedStorage").Events.InventoryActions:InvokeServer(unpack(args))
-        end)
+                game:GetService("ReplicatedStorage").Events.InventoryActions:InvokeServer(unpack(args))
+            end)
+        end
     end
+    marketItemsLPInfo = {}
 end
 
 --// Quick sell
 local function sellItem(itemName, amount)
     spawn(function()
-        List[itemName]:Destroy()
+	pcall(function()
+       		List[itemName]:Destroy()
+	end)
         local args = {
             [1] = "QuickSell",
             [2] = itemName,
@@ -125,6 +130,7 @@ end
 
 --// Market sell
 local function marketSellItem(itemName, amount, value)
+    print(value)
     spawn(function()
         local args = {
             [1] = "Marketplace",
@@ -152,8 +158,8 @@ local function isValidItem(name, maxprice)
     local value = getItemPrice(name, "rolimonsValue")
     print(automarketplace, value >= minAutomarketSell, value <= maxAutomarketSell)
     if automarketplace and (value >= minAutomarketSell and value <= maxAutomarketSell) then
-        return true, "marketsell", value + valueToMarketSell
-    elseif autosell and RAP <= maxPrice then
+        return true, "marketsell", value * percentToMarketSell
+    elseif (autosell and RAP <= maxPrice) and (not pureraponly or RAP == value) then
         return true, "sell"
     end
     return false
@@ -193,13 +199,12 @@ end
 --// Sell items being added
 List.ChildAdded:Connect(function(item)
     if item:IsA("Frame") then
-        local valid, sellType, value = isValidItem(itemName, maxPrice)
+        local valid, sellType, value = isValidItem(item.Name, maxPrice)
         if valid then
             if sellType == "sell" then
-                sellItem(itemName, amount)
+                sellItem(item.Name, amount)
             elseif sellType == "marketsell" then
-                marketSellItem(itemName, amount, value)
-                table.insert(marketItemsLPInfo, {"name" = itemName, "amount" = amount})
+                marketSellItem(item.Name, amount, value)
             end
         end
     end
@@ -272,7 +277,7 @@ Countdown:GetPropertyChangedSignal("Text"):Connect(function()
     local resetted = (string.match(countdownText:lower(), "win") == "win" or string.match(countdownText:lower(), "won") == "won")
     if resetted then
         resetJackpotLPInfo()
-        print("reset")
+        --print("reset")
     end
 end)
 
@@ -280,7 +285,7 @@ ReplicatedStorage:WaitForChild("Events"):WaitForChild("DataSend").OnClientEvent:
     if signature == "JackpotItem" and name == LocalPlayer.Name then
         jackpotLPInfo[tier]["total"] += value
         jackpotLPInfo[tier]["itemsAlreadyIn"] += 1
-        print("total now:", jackpotLPInfo[tier]["total"], "itemsAlreadyIn now:", jackpotLPInfo[tier]["itemsAlreadyIn"])
+        --print("total now:", jackpotLPInfo[tier]["total"], "itemsAlreadyIn now:", jackpotLPInfo[tier]["itemsAlreadyIn"])
     end
 end)
 
@@ -379,11 +384,11 @@ Countdown:GetPropertyChangedSignal("Text"):Connect(function()
                     [3] = 1, --amount
                     [4] = jackpotTier
                 }
-                print(itemInfo.name, jackpotTier)
+                --print(itemInfo.name, jackpotTier)
                 spawn(function()
-                    game:GetService("ReplicatedStorage").Events.GamesActions:InvokeServer(unpack(args))
+                    --game:GetService("ReplicatedStorage").Events.GamesActions:InvokeServer(unpack(args))
                     pcall(function()
-                        LocalPlayer.PlayerGui.Gui.Frames.Jackpot.SubJackpot.LocalInventory.List[itemInfo.name]:Destroy()
+                        --LocalPlayer.PlayerGui.Gui.Frames.Jackpot.SubJackpot.LocalInventory.List[itemInfo.name]:Destroy()
                     end)
                 end)
                 --:InvokeServer("Jackpot", itemName, amount, jackpotTier)
@@ -394,9 +399,53 @@ Countdown:GetPropertyChangedSignal("Text"):Connect(function()
         elseif totalJackpot <= 0 then
             sendNotification("Jackpot", "Did not join since there were no participants.")
         elseif totalInv / (totalJackpot + totalInv) < (minJackpotChance / 100) then
+	        print(tierMax, itemsAlreadyIn, LPTotalAlreadyIn, n, totalInv, totalJackpot)
             sendNotification("Jackpot", "% not high enough: " .. totalInv / (totalJackpot + totalInv) * 100 .. "% | " .. minJackpotChance .. "%")
         elseif totalJackpot - LPTotalAlreadyIn <= 0 then
             sendNotification("Jackpot", "You were the only one participating! Did not join.")
+        end
+    end
+end)
+
+--// Auction Variables
+local auctionBoard = LocalPlayer.PlayerGui.AuctionBoard
+local auctionCountdown = auctionBoard.Status
+local auctionHeader = auctionBoard.Header
+local auctionBidders = auctionBoard.Bidders
+
+local function bidAuction(num)
+    local args = {
+        [1] = "AuctionBid",
+        [2] = num
+    }
+    game:GetService("ReplicatedStorage").Events.GamesActions:InvokeServer(unpack(args))
+end
+
+--// Get top bidder
+local function getTopAuctionBid()
+    local last
+    for playerName, bid in pairs(AuctionFunctions.BidTable) do
+        last = bid
+        if playerName == LocalPlayer.Name then
+            last = nil
+        end
+    end
+    return bid
+end
+
+--// Auto auctionbid
+auctionCountdown:GetPropertyChangedSignal("Text"):Connect(function()
+    local countdownText = auctionCountdown.Text
+    local timeLeft = string.match(countdownText:lower(), "win") ~= "win" and string.gsub(countdownText, "%D", "")
+    if autobidtoauction and timeLeft == "1" then
+        wait(autoAuctionWaitTime)
+        local itemName = string.match(auctionHeader.Text, "%(.*%)"):gsub("[%(%)]","")
+        local value = getItemPrice(itemName, "rolimonsValue")
+        local topBid = getTopAuctionBid()
+        if not topBid then
+            bidAuction(value * .6)
+        elseif topBid/value <= maxPercentOfValueToBid then
+            bidAuction(topBid + 1e-307) --smallest fucking number lmao
         end
     end
 end)
@@ -483,7 +532,8 @@ autoselloptions:AddSlider({text = 'Max price to autosell', value = 50000, min = 
     sellCurrentItems()
 end})
 autoselloptions:AddToggle({text = 'pure rap only', state = pureraponly, callback = function(v) 
-    pureraponly = v; 
+    pureraponly = v;
+    sellCurrentItems()
 end})
 autoselloptions:AddLabel({text = "quicksells if rap = value"})
 
@@ -545,10 +595,11 @@ autojackpotoptions:AddLabel({text = "Waits x sec. from 1 sec"})
 
 
 local window3 = lib:CreateWindow('AUTOMARKETPLACE')
-window3:AddLabel({text = "Automatically adds to marketplace"})
+window3:AddLabel({text = "AUTOMP AT YOUR OWN RISK."})
+window3:AddLabel({text = "AUTOMP MAY BE BUGGY."})
 
 --// auto marketplace UI
-window3:AddToggle({text = 'Auto marketplace', state = automarketplace, callback = function(v) 
+window3:AddToggle({text = 'Auto add to marketplace', state = automarketplace, callback = function(v) 
     automarketplace = v;
     sellCurrentItems()
 end})
@@ -557,18 +608,43 @@ end})
 local automarketplaceoptions = window3:AddFolder("auto marketplace options")
 automarketplaceoptions:AddSlider({text = 'min value to put up', value = 50000, min = 0, max = 9e9, float = 1000, callback = function(v)
     minAutomarketSell = v
+    sellCurrentItems()
 end})
 automarketplaceoptions:AddSlider({text = 'max value to put up', value = 9e9, min = 0, max = 9e9, float = 1000, callback = function(v)
     maxAutomarketSell = v
+    sellCurrentItems()
 end})
-automarketplaceoptions:AddSlider({text = 'increased value to sell', value = -1000, min = -9e9, max = 9e9, float = 1000, callback = function(v)
-    valueToMarketSell = v
+automarketplaceoptions:AddSlider({text = 'percent of value to sell', value = 104, min = 10, max = 500, float = 1, callback = function(v)
+    percentToMarketSell = v/100
 end})
+automarketplaceoptions:AddLabel({text = "warning: it will do value of ur item"})
+automarketplaceoptions:AddLabel({text = "multiplied by percentage/100"})
 
 --// remove items from market UI
-window3:AddButton({text = 'remove all your items from market', callback = function()
+window3:AddButton({text = 'remove ur items from market', callback = function()
     removeAllFromMarketPlace()
 end})
+
+
+local window4 = lib:CreateWindow('Auto auctionbid')
+window4:AddLabel({text = "AUTOBID IS STILL IN TESTING"})
+window4:AddLabel({text = "Min. % of value is 60%"})
+
+--// auto auctionbid UI
+window4:AddToggle({text = 'Auto bid to auction', state = autobidtoauction, callback = function(v) 
+    autobidtoauction = v;
+end})
+
+--// auto auctionbid options UI
+local autoauctionbid = window4:AddFolder("auto auctionbid options")
+autoauctionbid:AddSlider({text = 'max % of value to bid', value = 70, min = 60, max = 200, float = 1, callback = function(v)
+    maxPercentOfValueToBid = v/100
+end})
+--// Wait time UI
+autoauctionbid:AddSlider({text = 'waitTime', value = .9, min = 0, max = 1, float = .01, callback = function(v)
+    autoAuctionWaitTime = v
+end})
+autoauctionbid:AddLabel({text = "Waits x sec. from 1 sec"})
 
 --// Init library
 lib:Init()
