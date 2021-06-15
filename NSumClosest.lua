@@ -201,7 +201,8 @@ NSumClosestLib.QuickNSumClosest = function(arr, n, target)
     local CurrentSum = 0
     local Adds = 0
 
-    for _, itemInfo in ipairs(arr) do
+    for i = #arr, 1, -1 do
+        local itemInfo = arr[i]
         local Number = itemInfo["rolimonsValue"]
         if (CurrentSum + Number <= target) then
             CurrentSum += Number
@@ -210,7 +211,7 @@ NSumClosestLib.QuickNSumClosest = function(arr, n, target)
             
             table.insert(res, itemInfo)
 
-            if (Adds == n or CurrentSum == target) then
+            if (Adds == n) then
                 break
             end
         end
