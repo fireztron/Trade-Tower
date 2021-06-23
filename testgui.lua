@@ -6,7 +6,7 @@
 
     Hope you enjoyed the script!
 ]]
-
+--[[
 --// Join discord
 local function copyDiscord()
     setclipboard("https://discord.gg/3HymEaePFT")
@@ -555,13 +555,6 @@ end})
 window:AddButton({text = 'copy discord link', callback = function()
     copyDiscord()
     sendNotification("discord link copied", "welcome aboard :)")
-    --[[local totalInv, itemsForJackpot = getTotalAmountAbleToPutIn(250000)
-    if totalInv then
-        print(totalInv, totalInv / (getTotalJackpot() + totalInv))
-        for _, itemInfo in pairs(itemsForJackpot) do
-            print(itemInfo.name, itemInfo.rolimonsValue)
-        end
-    end]]
 end})
 
 
@@ -649,3 +642,6 @@ autoauctionbid:AddLabel({text = "Waits x sec. from 1 sec"})
 lib:Init()
 
 warn("my butthole is wet daddy")
+]]
+
+warn("detected for now, wait for an update")
