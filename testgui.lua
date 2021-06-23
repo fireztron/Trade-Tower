@@ -1,3 +1,11 @@
+-- DETECTED FOR NOW, WAIT FOR AN UPDATE
+
+
+
+
+
+
+
 --[[
     Jackpot should be working!
         - Accurately searches for combined item prices closest to the jackpot cap (may freeze if you have many items, will fix issue in future)
@@ -643,5 +651,3 @@ lib:Init()
 
 warn("my butthole is wet daddy")
 ]]
-
-warn("detected for now, wait for an update")
