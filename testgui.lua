@@ -97,6 +97,8 @@ local percentToMarketSell = 104/100
 local maxPercentOfValueToBid = 70/100
 local autoAuctionWaitTime = .9
 
+local buyingCase = false
+
 --// Remove every item u own from the marketplace
 local function removeAllFromMarketPlace()
     for _, frame in pairs(LocalPlayer.PlayerGui.Gui.Frames.Market.SubMarket.Holder.List:GetChildren()) do
@@ -454,7 +456,7 @@ end)
 --// Auto click
 spawn(function()
     while true do
-        if autoclick then
+        if autoclick and not buyingCase then
             game:GetService("ReplicatedStorage").Events.Click:FireServer()
         end
         wait()
@@ -464,7 +466,7 @@ end)
 --// Auto upgrade
 spawn(function()
     while true do
-        if autoupgrade then
+        if autoupgrade and not buyingCase then
             spawn(function()
                 game:GetService("ReplicatedStorage").Events.StoreActions:InvokeServer("Upgrade")
             end)
@@ -483,7 +485,11 @@ spawn(function()
                 game:GetService("ReplicatedStorage").Events.OpenCase:InvokeServer(caseName)
             end
         end)
+        if autobuy then
+            buyingCase = true
+        end
         wait(4.65)
+        buyingCase = false
     end
 end)
 
