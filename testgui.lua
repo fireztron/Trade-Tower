@@ -1,10 +1,4 @@
--- DETECTED FOR NOW, WAIT FOR AN UPDATE
-
-
-
-
-
-
+-- Possibly detected?
 
 --[[
     Jackpot should be working!
@@ -14,7 +8,7 @@
 
     Hope you enjoyed the script!
 ]]
---[[
+
 --// Join discord
 local function copyDiscord()
     setclipboard("https://discord.gg/3HymEaePFT")
@@ -489,7 +483,7 @@ spawn(function()
                 game:GetService("ReplicatedStorage").Events.OpenCase:InvokeServer(caseName)
             end
         end)
-        wait()
+        wait(4.65)
     end
 end)
 
@@ -514,6 +508,7 @@ end
 local lib = loadstring(game:HttpGet('https://raw.githubusercontent.com/fireztron/uwuware-ui-library/main/ui.lua', true))()
 local window = lib:CreateWindow('PPHAX GUI - Trade Tower')
 window:AddLabel({text = "fireztron @ v3rmillion"})
+window:AddLabel({text = "features possibly detected?"})
 
 --// auto buy UI
 window:AddToggle({text = 'Auto buy', state = autobuy, callback = function(v) 
