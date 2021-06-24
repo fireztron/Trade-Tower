@@ -645,4 +645,3 @@ autoauctionbid:AddLabel({text = "Waits x sec. from 1 sec"})
 lib:Init()
 
 warn("my butthole is wet daddy")
-]]
