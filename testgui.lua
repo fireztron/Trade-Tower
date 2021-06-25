@@ -1,5 +1,3 @@
--- Possibly detected?
-
 --[[
     Jackpot should be working!
         - Accurately searches for combined item prices closest to the jackpot cap (may freeze if you have many items, will fix issue in future)
@@ -65,6 +63,42 @@ local ClickRemote; do
     end
 end
 
+local UpgradeClickRemote; local InventoryActionsRemote; local GamesActionsRemote; do 
+    for i,v in pairs(getgc()) do 
+        --// Upgrade Click Remote Grabber
+        if type(v) == "function" and islclosure(v) and getfenv(v).script == game:GetService("Players").LocalPlayer.PlayerGui.Gui.GuiModules.Store then 
+            local x = debug.getconstants(v)
+            if table.find(x, "Upgrade") then
+                UpgradeClickRemote = debug.getupvalue(v,1)
+            end
+
+        --// Inventory Actions Remote Grabber
+        elseif type(v) == "function" and islclosure(v) and getfenv(v).script == game:GetService("Players").irvindee.PlayerGui.Gui.GuiModules.Inventory and not first then 
+            local x = debug.getconstants(v)
+            if table.find(x, "Equip") then
+                InventoryActionsRemote = debug.getupvalue(v,2)
+                first = true
+            end
+
+        --// Games Actions Remote Grabber
+        elseif type(v) == "function" and islclosure(v) and getfenv(v).script == game:GetService("Players").irvindee.PlayerGui.AuctionBoard.Handler then 
+            local x = debug.getconstants(v)
+            if table.find(x, "AuctionBid") then
+                GamesActionsRemote = debug.getupvalue(v,2)
+            end
+        end
+    end
+end
+
+local OpenCaseRemote; do 
+    local OpenCaseButton = game:GetService("Players").LocalPlayer.PlayerGui.Gui.Frames.Cases.Main.Display.Open
+    if OpenCaseButton.Visible then
+        for i,v in pairs(getconnections(OpenCaseButton.MouseButton1Click)) do
+            OpenCaseRemote = debug.getupvalue(v.Function, 3)
+        end
+    end
+end
+
         --// Get case prices caseInfo = {
         --      ["properties"] = {
         --          ["Price"]
@@ -119,7 +153,7 @@ local function removeAllFromMarketPlace()
                     [2] = itemName
                 }
 
-                game:GetService("ReplicatedStorage").Events.InventoryActions:InvokeServer(unpack(args))
+                InventoryActionsRemote:InvokeServer(unpack(args))
             end)
         end
     end
@@ -137,7 +171,7 @@ local function sellItem(itemName, amount)
             [2] = itemName,
             [3] = amount
         }
-        game:GetService("ReplicatedStorage").Events.InventoryActions:InvokeServer(unpack(args))
+        InventoryActionsRemote:InvokeServer(unpack(args))
     end)
 end
 
@@ -152,7 +186,7 @@ local function marketSellItem(itemName, amount, value)
             [4] = amount
         }
 
-        game:GetService("ReplicatedStorage").Events.InventoryActions:InvokeServer(unpack(args))
+        InventoryActionsRemote:InvokeServer(unpack(args))
     end)
 end
 
@@ -399,7 +433,7 @@ Countdown:GetPropertyChangedSignal("Text"):Connect(function()
                 }
                 print(itemInfo.name, jackpotTier)
                 spawn(function()
-                    game:GetService("ReplicatedStorage").Events.GamesActions:InvokeServer(unpack(args))
+                    GamesActionsRemote:InvokeServer(unpack(args))
                     pcall(function()
                         LocalPlayer.PlayerGui.Gui.Frames.Jackpot.SubJackpot.LocalInventory.List[itemInfo.name]:Destroy()
                     end)
@@ -430,7 +464,7 @@ local function bidAuction(num)
         [1] = "AuctionBid",
         [2] = num
     }
-    game:GetService("ReplicatedStorage").Events.GamesActions:InvokeServer(unpack(args))
+    GamesActionsRemote:InvokeServer(unpack(args))
 end
 
 --// Get top bidder
@@ -465,7 +499,7 @@ end)
 --// Auto click
 spawn(function()
     while true do
-        if autoclick and not buyingCase then
+        if autoclick then --and not buyingCase then
             ClickRemote:FireServer()
         end
         wait()
@@ -475,9 +509,9 @@ end)
 --// Auto upgrade
 spawn(function()
     while true do
-        if autoupgrade and not buyingCase then
+        if autoupgrade then --and not buyingCase then
             spawn(function()
-                game:GetService("ReplicatedStorage").Events.StoreActions:InvokeServer("Upgrade")
+                UpgradeClickRemote:InvokeServer("Upgrade")
             end)
         end
         wait()
@@ -489,16 +523,17 @@ spawn(function()
     while true do
         spawn(function()
             local caseName = getHighestValueBuyableCase()
-            if autobuy and caseName then
+            if autobuy then --and caseName then
                 --print(caseName)
-                game:GetService("ReplicatedStorage").Events.OpenCase:InvokeServer(caseName)
+                OpenCaseRemote:InvokeServer(caseName)
             end
         end)
-        if autobuy then
-            buyingCase = true
-        end
-        wait(4.65)
-        buyingCase = false
+        --if autobuy then
+        --    buyingCase = true
+        --end
+        wait()
+        --wait(4.65)
+        --buyingCase = false
     end
 end)
 
