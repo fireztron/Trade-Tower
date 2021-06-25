@@ -558,8 +558,8 @@ end
 local lib = loadstring(game:HttpGet('https://raw.githubusercontent.com/fireztron/uwuware-ui-library/main/ui.lua', true))()
 local window = lib:CreateWindow('PPHAX GUI - Trade Tower')
 window:AddLabel({text = "fireztron @ v3rmillion"})
-window:AddLabel({text = "if u arent using the official github script"})
-window:AddLabel({text = "exit immediately."})
+window:AddLabel({text = "if u arent using the official github"})
+window:AddLabel({text = "script, exit immediately."})
 
 --// auto buy UI
 window:AddToggle({text = 'Auto buy', state = autobuy, callback = function(v) 
