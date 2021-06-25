@@ -56,6 +56,15 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local List = LocalPlayer.PlayerGui.Gui.Frames.Inventory.SubInventory.Holder.List
 
+local ClickRemote; do 
+    local Clicker = LocalPlayer.PlayerGui.Gui.Hotbar.Clicker.Button
+    if Clicker.Visible then
+        for i,v in pairs(getconnections(Clicker.MouseButton1Click)) do
+            ClickRemote = debug.getupvalue(v.Function,1)
+        end
+    end
+end
+
         --// Get case prices caseInfo = {
         --      ["properties"] = {
         --          ["Price"]
@@ -457,7 +466,7 @@ end)
 spawn(function()
     while true do
         if autoclick and not buyingCase then
-            game:GetService("ReplicatedStorage").Events.Click:FireServer()
+            ClickRemote:FireServer()
         end
         wait()
     end
