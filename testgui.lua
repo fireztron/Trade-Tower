@@ -73,7 +73,7 @@ local UpgradeClickRemote; local InventoryActionsRemote; local GamesActionsRemote
             end
 
         --// Inventory Actions Remote Grabber
-        elseif type(v) == "function" and islclosure(v) and getfenv(v).script == game:GetService("Players").irvindee.PlayerGui.Gui.GuiModules.Inventory and not first then 
+        elseif type(v) == "function" and islclosure(v) and getfenv(v).script == LocalPlayer.PlayerGui.Gui.GuiModules.Inventory and not first then 
             local x = debug.getconstants(v)
             if table.find(x, "Equip") then
                 InventoryActionsRemote = debug.getupvalue(v,2)
@@ -81,7 +81,7 @@ local UpgradeClickRemote; local InventoryActionsRemote; local GamesActionsRemote
             end
 
         --// Games Actions Remote Grabber
-        elseif type(v) == "function" and islclosure(v) and getfenv(v).script == game:GetService("Players").irvindee.PlayerGui.AuctionBoard.Handler then 
+        elseif type(v) == "function" and islclosure(v) and getfenv(v).script == LocalPlayer.PlayerGui.AuctionBoard.Handler then 
             local x = debug.getconstants(v)
             if table.find(x, "AuctionBid") then
                 GamesActionsRemote = debug.getupvalue(v,2)
