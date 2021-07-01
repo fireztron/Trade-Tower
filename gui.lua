@@ -1,6 +1,9 @@
+warn("DO NOT USE")
+
 --[[
-  ZERO PROFIT AUTO FARM LOL XD
+  DO NOT USE
 ]]
+--[[
 --// Modules
 local InfoModule = require(game.ReplicatedStorage.Modules.Info)
 local MainFunctions = require(game:GetService("Players").LocalPlayer.PlayerGui.Gui.GuiModules.MainFunctions)
@@ -233,3 +236,4 @@ end})
 lib:Init()
 
 warn("my butthole is wet daddy")
+]]
