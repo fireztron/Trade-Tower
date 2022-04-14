@@ -1,3 +1,6 @@
+--https://v3rmillion.net/showthread.php?tid=1165658
+-- fireztron @ v3rmillion
+
 warn("USE THIS: https://raw.githubusercontent.com/fireztron/Trade-Tower/main/testguiv2.lua")
 
 local function sendNotification(titleText, descText)
