@@ -3,6 +3,8 @@
 
 warn("USE THIS: https://raw.githubusercontent.com/fireztron/Trade-Tower/main/testguiv2.lua")
 
+
+local StarterGui = game:GetService("StarterGui")
 local function sendNotification(titleText, descText)
     StarterGui:SetCore("SendNotification",{
         Title = titleText;
@@ -19,7 +21,6 @@ local function copyLoadstring()
     setclipboard('loadstring(game:HttpGet("https://raw.githubusercontent.com/fireztron/Trade-Tower/main/testguiv2.lua"))()')
 end
 
-local StarterGui = game:GetService("StarterGui")
 local bindable = Instance.new("BindableFunction")
 
 function bindable.OnInvoke(response)
