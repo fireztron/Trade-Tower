@@ -3,7 +3,7 @@
     Features:
     - Autobuy (can set price range)
     - Autosell (limited to 50k valued items due to game design)
-       + pure rap only toggle (quicksells if rap = value)
+         + pure rap only toggle (quicksells if rap = value)
     - Autoclick (gain tradebucks)
     - Auto upgrade tradebucks per click
     - Auto upgrade case opening time
@@ -12,6 +12,7 @@
          + Accurately searches for combined item prices closest to the jackpot cap (does not use greedy algorithm)
               ~With a lot of items (300+) entering tier 1 or 2 jackpot you may lag a bit
          + If desired, use the quick search option (uses greedy algorithm), best for those of you with many items
+         + ONLY WORKS IF YOU OPEN UP THE RIGHT JACKPOT GAME TIER (WILL FIX LATER)
 
     - Auto add to marketplace
          + Cooldowns to adding items to marketplace, expect not have all your items put up at once.
@@ -21,17 +22,16 @@
     - Auto TP to supply drops
     - Market Snipe Notifier (99 Robux BUT FOR FREE WITH THIS)
     - Mod Notifier
-
-      + auto panic on mod join
-
+         + auto panic on mod join
+    - collect available easter eggs
     - Antiafk
     - Anti In-Game Afk
     - manual panic button
     - Name protect (can stream/record without people knowing names)
     - BLACKLIST ITEMS OR DEMANDS (ie. terrible or high demand)
-       + Autojackpot, Autosell, Automarketplace, or all 3
+        + Autojackpot, Autosell, Automarketplace, or all 3
     - WHITELIST ITEMS OR DEMANDS
-       + Only Auto-auction bid
+        + Only Auto-auction bid
     - CAN NOW SAVE YOUR SETTINGS AND LOAD THEM INSTANTLY
     - Plenty of customization
 
